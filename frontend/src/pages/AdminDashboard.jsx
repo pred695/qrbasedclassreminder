@@ -10,9 +10,10 @@ import TableFilters from '@components/admin/TableFilters';
 import SignupsTable from '@components/admin/SignupsTable';
 import Pagination from '@components/admin/Pagination';
 import ReminderDetailModal from '@components/admin/ReminderDetailModal';
+import AddStudentModal from '@components/admin/AddStudentModal';
 import Spinner from '@components/shared/Spinner';
 import Alert, { AlertDescription } from '@components/shared/Alert';
-import { Download, RefreshCw, Users, Clock, LogOut } from 'lucide-react';
+import { Download, RefreshCw, Users, Clock, LogOut, UserPlus } from 'lucide-react';
 import { exportSignupsToCSV, generateExportFilename } from '@utils/csvExport';
 import toast from 'react-hot-toast';
 
@@ -52,6 +53,7 @@ const AdminDashboard = () => {
   // Modal state
   const [selectedSignup, setSelectedSignup] = useState(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isAddStudentModalOpen, setIsAddStudentModalOpen] = useState(false);
 
   // Fetch data on mount
   useEffect(() => {
@@ -117,6 +119,10 @@ const AdminDashboard = () => {
                 {admin.email}
               </span>
             )}
+            <Button onClick={() => setIsAddStudentModalOpen(true)}>
+              <UserPlus className="mr-2 h-4 w-4" />
+              Add Student
+            </Button>
             <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -271,6 +277,13 @@ const AdminDashboard = () => {
         onClose={() => setIsDetailModalOpen(false)}
         signup={selectedSignup}
         onRefresh={refreshData}
+      />
+
+      {/* Add Student Modal */}
+      <AddStudentModal
+        isOpen={isAddStudentModalOpen}
+        onClose={() => setIsAddStudentModalOpen(false)}
+        onSuccess={refreshData}
       />
     </div>
   );
