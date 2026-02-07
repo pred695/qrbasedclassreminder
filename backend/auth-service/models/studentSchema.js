@@ -51,6 +51,7 @@ const createStudentSchema = z
     .object({
         email: emailSchema.nullish(), // Accept null, undefined, or valid string
         phone: phoneSchema.nullish(), // Accept null, undefined, or valid string
+        name: z.string().max(255).optional(),
         optedOutEmail: z.boolean().optional().default(false),
         optedOutSms: z.boolean().optional().default(false),
     })
@@ -64,6 +65,7 @@ const updateStudentSchema = z
     .object({
         email: emailSchema.optional(),
         phone: phoneSchema.optional(),
+        name: z.string().max(255).optional(),
         optedOutEmail: z.boolean().optional(),
         optedOutSms: z.boolean().optional(),
     })

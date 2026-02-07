@@ -29,6 +29,7 @@ const STUDENT_FIELDS = {
         id: true,
         email: true,
         phone: true,
+        name: true,
         optedOutEmail: true,
         optedOutSms: true,
         createdAt: true,
@@ -38,6 +39,7 @@ const STUDENT_FIELDS = {
         id: true,
         email: true,
         phone: true,
+        name: true,
     },
 };
 
