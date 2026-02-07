@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useAdminStore from '@store/adminStore';
 import useReminderStore from '@store/reminderStore';
+import useAuthStore from '@store/authStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/shared/Card';
 import Button from '@components/shared/Button';
 import SearchBar from '@components/admin/SearchBar';
@@ -10,7 +12,7 @@ import Pagination from '@components/admin/Pagination';
 import ReminderDetailModal from '@components/admin/ReminderDetailModal';
 import Spinner from '@components/shared/Spinner';
 import Alert, { AlertDescription } from '@components/shared/Alert';
-import { Download, RefreshCw, Users, Clock } from 'lucide-react';
+import { Download, RefreshCw, Users, Clock, LogOut } from 'lucide-react';
 import { exportSignupsToCSV, generateExportFilename } from '@utils/csvExport';
 import toast from 'react-hot-toast';
 
@@ -44,6 +46,8 @@ const AdminDashboard = () => {
   } = useAdminStore();
 
   const { sendReminderAsync, sendingReminders } = useReminderStore();
+  const { logout, admin } = useAuthStore();
+  const navigate = useNavigate();
 
   // Modal state
   const [selectedSignup, setSelectedSignup] = useState(null);
@@ -107,10 +111,25 @@ const AdminDashboard = () => {
               Manage training registrations and send reminders
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-2">
+            {admin && (
+              <span className="text-sm text-muted-foreground mr-2">
+                {admin.email}
+              </span>
+            )}
             <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
+            </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                await logout();
+                navigate('/login');
+              }}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
             </Button>
           </div>
         </div>
