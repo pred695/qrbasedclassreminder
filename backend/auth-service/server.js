@@ -44,6 +44,12 @@ require("dotenv").config({
 
 const app = express();
 
+// Trust proxy - required for secure cookies behind reverse proxies (Render, Heroku, etc.)
+// This allows Express to trust X-Forwarded-* headers
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
+
 // =============================================
 // Logging Middleware (Must be first!)
 // =============================================
