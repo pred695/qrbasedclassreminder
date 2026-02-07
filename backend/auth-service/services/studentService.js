@@ -14,25 +14,25 @@ const { createLogger } = require("../shared/utils/logger");
 
 const logger = createLogger("student-service");
 
-// Class type to reminder interval mapping (in days before class)
+// Class type to reminder interval mapping (in months after signup)
 const CLASS_REMINDER_INTERVALS = {
-    TYPE_1: 7, // 7 days before
-    TYPE_2: 7,
-    TYPE_3: 7,
-    TYPE_4: 7,
-    TYPE_5: 7,
-    TYPE_6: 7,
+    TYPE_1: 4,   // Initial Firearms - 4 months
+    TYPE_2: 5,   // Firearms Requalification - 5 months
+    TYPE_3: 11,  // CPR/AED & First Aid - 11 months
+    TYPE_4: 11,  // Handcuffing / Pepper Spray - 11 months
+    TYPE_5: 11,  // CEW / Taser - 11 months
+    TYPE_6: 11,  // Baton - 11 months
 };
 
 /**
  * Calculate reminder scheduled date based on class type
  * @param {string} classType - Class type
- * @returns {Date} Scheduled reminder date
+ * @returns {Date} Scheduled reminder date (months after signup)
  */
 const calculateReminderDate = (classType) => {
-    const daysBeforeClass = CLASS_REMINDER_INTERVALS[classType] || 7;
+    const monthsAfterSignup = CLASS_REMINDER_INTERVALS[classType] || 11;
     const scheduledDate = new Date();
-    scheduledDate.setDate(scheduledDate.getDate() + daysBeforeClass);
+    scheduledDate.setMonth(scheduledDate.getMonth() + monthsAfterSignup);
     return scheduledDate;
 };
 

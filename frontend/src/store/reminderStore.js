@@ -1,157 +1,82 @@
 import { create } from 'zustand';
+import * as adminService from '@services/adminService';
 
 const useReminderStore = create((set, get) => ({
   // State
-  scheduledReminders: [],
   sendingReminders: [],
-  sentReminders: [],
-  failedReminders: [],
-
-  // Loading states
-  isScheduling: false,
-  isSending: false,
+  deliveryDetails: {},
 
   // Error states
-  scheduleError: null,
   sendError: null,
 
-  // Actions - Schedule Reminders
-  scheduleReminder: (signupId, reminderDate) => {
-    set((state) => ({
-      scheduledReminders: [
-        ...state.scheduledReminders,
-        {
-          signupId,
-          scheduledDate: reminderDate,
-          status: 'scheduled',
-          createdAt: new Date(),
-        },
-      ],
-    }));
-  },
-
-  // Actions - Send Reminders
-  markReminderAsSending: (signupId) => {
+  // Actions - Send Reminder via API
+  sendReminderAsync: async (signupId) => {
     set((state) => ({
       sendingReminders: [...state.sendingReminders, signupId],
+      sendError: null,
     }));
+    try {
+      const result = await adminService.sendReminder(signupId);
+      set((state) => ({
+        sendingReminders: state.sendingReminders.filter((id) => id !== signupId),
+      }));
+      return result;
+    } catch (error) {
+      set((state) => ({
+        sendingReminders: state.sendingReminders.filter((id) => id !== signupId),
+        sendError: error.message,
+      }));
+      throw error;
+    }
   },
 
-  markReminderAsSent: (signupId) => {
-    set((state) => ({
-      sendingReminders: state.sendingReminders.filter((id) => id !== signupId),
-      sentReminders: [
-        ...state.sentReminders,
-        {
-          signupId,
-          sentAt: new Date(),
-          status: 'sent',
+  // Actions - Reschedule Reminder via API
+  rescheduleReminderAsync: async (signupId, newDate) => {
+    try {
+      const result = await adminService.rescheduleReminder(signupId, newDate);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Actions - Reset Reminder via API
+  resetReminderAsync: async (signupId) => {
+    try {
+      const result = await adminService.resetReminder(signupId);
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Actions - Fetch Delivery Details
+  fetchDeliveryDetails: async (signupId) => {
+    try {
+      const result = await adminService.getDeliveryDetails(signupId);
+      set((state) => ({
+        deliveryDetails: {
+          ...state.deliveryDetails,
+          [signupId]: result.data,
         },
-      ],
-    }));
-  },
-
-  markReminderAsFailed: (signupId, error) => {
-    set((state) => ({
-      sendingReminders: state.sendingReminders.filter((id) => id !== signupId),
-      failedReminders: [
-        ...state.failedReminders,
-        {
-          signupId,
-          failedAt: new Date(),
-          error,
-          status: 'failed',
-        },
-      ],
-    }));
-  },
-
-  // Actions - Retry Failed Reminders
-  retryFailedReminder: (signupId) => {
-    set((state) => ({
-      failedReminders: state.failedReminders.filter(
-        (reminder) => reminder.signupId !== signupId
-      ),
-      sendingReminders: [...state.sendingReminders, signupId],
-    }));
-  },
-
-  // Actions - Bulk Operations
-  scheduleMultipleReminders: (reminders) => {
-    set((state) => ({
-      scheduledReminders: [
-        ...state.scheduledReminders,
-        ...reminders.map((reminder) => ({
-          ...reminder,
-          status: 'scheduled',
-          createdAt: new Date(),
-        })),
-      ],
-    }));
-  },
-
-  // Actions - Clear States
-  clearScheduledReminders: () => {
-    set({ scheduledReminders: [] });
-  },
-
-  clearSentReminders: () => {
-    set({ sentReminders: [] });
-  },
-
-  clearFailedReminders: () => {
-    set({ failedReminders: [] });
-  },
-
-  clearAllReminders: () => {
-    set({
-      scheduledReminders: [],
-      sendingReminders: [],
-      sentReminders: [],
-      failedReminders: [],
-    });
+      }));
+      return result.data;
+    } catch (error) {
+      throw error;
+    }
   },
 
   // Getters
-  getReminderBySignupId: (signupId) => {
-    const state = get();
-
-    // Check if sending
-    if (state.sendingReminders.includes(signupId)) {
-      return { status: 'sending' };
-    }
-
-    // Check if sent
-    const sent = state.sentReminders.find((r) => r.signupId === signupId);
-    if (sent) return sent;
-
-    // Check if failed
-    const failed = state.failedReminders.find((r) => r.signupId === signupId);
-    if (failed) return failed;
-
-    // Check if scheduled
-    const scheduled = state.scheduledReminders.find((r) => r.signupId === signupId);
-    if (scheduled) return scheduled;
-
-    return null;
+  isSending: (signupId) => {
+    return get().sendingReminders.includes(signupId);
   },
 
-  getScheduledRemindersCount: () => {
-    return get().scheduledReminders.length;
+  getDeliveryDetailsForSignup: (signupId) => {
+    return get().deliveryDetails[signupId] || null;
   },
 
-  getSentRemindersCount: () => {
-    return get().sentReminders.length;
-  },
-
-  getFailedRemindersCount: () => {
-    return get().failedReminders.length;
-  },
-
-  getPendingRemindersCount: () => {
-    const state = get();
-    return state.scheduledReminders.length + state.sendingReminders.length;
-  },
+  // Clear
+  clearSendError: () => set({ sendError: null }),
 }));
 
 export default useReminderStore;

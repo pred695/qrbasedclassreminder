@@ -100,12 +100,12 @@ export const SUCCESS_MESSAGES = {
   OPT_OUT_SUCCESS: 'Your preferences have been updated successfully.',
 };
 
-// Class type reminder intervals (in days)
+// Class type reminder intervals (in months after signup)
 export const CLASS_REMINDER_INTERVALS = {
-  TYPE_1: 7,
-  TYPE_2: 7,
-  TYPE_3: 7,
-  TYPE_4: 7,
-  TYPE_5: 7,
-  TYPE_6: 7,
+  TYPE_1: 4,   // Initial Firearms - 4 months
+  TYPE_2: 5,   // Firearms Requalification - 5 months
+  TYPE_3: 11,  // CPR/AED & First Aid - 11 months
+  TYPE_4: 11,  // Handcuffing / Pepper Spray - 11 months
+  TYPE_5: 11,  // CEW / Taser - 11 months
+  TYPE_6: 11,  // Baton - 11 months
 };

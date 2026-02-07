@@ -42,3 +42,42 @@ export const updateSignup = async (signupId, updateData) => {
 export const deleteSignup = async (signupId) => {
   return await apiClient.delete(`/api/admin/signups/${signupId}`);
 };
+
+/**
+ * Send reminder manually for a specific signup
+ * @param {string} signupId - Signup ID
+ * @returns {Promise<Object>} Send result
+ */
+export const sendReminder = async (signupId) => {
+  return await apiClient.post(`/api/admin/reminders/${signupId}/send`);
+};
+
+/**
+ * Reschedule a reminder
+ * @param {string} signupId - Signup ID
+ * @param {string} newDate - New scheduled date (ISO string)
+ * @returns {Promise<Object>} Updated signup
+ */
+export const rescheduleReminder = async (signupId, newDate) => {
+  return await apiClient.patch(`/api/admin/reminders/${signupId}/reschedule`, {
+    reminderScheduledDate: newDate,
+  });
+};
+
+/**
+ * Reset a reminder back to PENDING
+ * @param {string} signupId - Signup ID
+ * @returns {Promise<Object>} Updated signup
+ */
+export const resetReminder = async (signupId) => {
+  return await apiClient.post(`/api/admin/reminders/${signupId}/reset`);
+};
+
+/**
+ * Get delivery details for a signup
+ * @param {string} signupId - Signup ID
+ * @returns {Promise<Object>} Signup with delivery logs
+ */
+export const getDeliveryDetails = async (signupId) => {
+  return await apiClient.get(`/api/admin/reminders/${signupId}/delivery`);
+};

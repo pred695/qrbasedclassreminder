@@ -28,6 +28,10 @@ const {
 const adminRoutes = require("./routes/adminRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const signupRoutes = require("./routes/signupRoutes");
+const reminderRoutes = require("./routes/reminderRoutes");
+
+// Cron jobs
+const { startReminderCron } = require("./jobs/reminderCron");
 
 // Admin repository and utils for auto-creation
 const adminRepository = require("./repositories/adminRepository");
@@ -64,7 +68,7 @@ app.use(
 // CORS configuration
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173" || "https://qrbasedclassreminder-g9oe.vercel.app/",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
@@ -266,6 +270,7 @@ app.get("/health", async (req, res) => {
 app.use("/api/admin", adminRoutes);
 app.use("/api/students", studentRoutes); // Public student routes
 app.use("/api/admin/signups", signupRoutes); // Admin signup management routes (auth temporarily disabled)
+app.use("/api/admin/reminders", reminderRoutes); // Admin reminder management routes
 
 // Error logging middleware
 app.use(errorLoggingMiddleware(logger));
@@ -326,7 +331,7 @@ const initializeDefaultAdmin = async () => {
 // =============================================
 
 const startServer = async () => {
-  const port = process.env.AUTH_SERVICE_PORT || 3001;
+  const port = process.env.PORT || process.env.AUTH_SERVICE_PORT || 3001;
 
   try {
     // Initialize database connection
@@ -336,6 +341,9 @@ const startServer = async () => {
 
     // Create default admin from environment variables
     await initializeDefaultAdmin();
+
+    // Start reminder cron job
+    startReminderCron();
 
     // Start server
     const server = app.listen(port, () => {

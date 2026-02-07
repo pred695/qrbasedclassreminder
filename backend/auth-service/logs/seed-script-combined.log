@@ -1,0 +1,44 @@
+{"level":"info","message":"Starting bulk seeding process...","service":"seed-script","timestamp":"2026-02-06T20:38:31.838Z"}
+{"level":"info","message":"Target: 500 student signups","service":"seed-script","timestamp":"2026-02-06T20:38:31.843Z"}
+{"level":"info","message":"Existing signups in database: 1","service":"seed-script","timestamp":"2026-02-06T20:38:35.361Z"}
+{"level":"warn","message":"Database already contains signups. This will add more data.","service":"seed-script","timestamp":"2026-02-06T20:38:35.363Z"}
+{"level":"warn","message":"To start fresh, run: npm run db:reset","service":"seed-script","timestamp":"2026-02-06T20:38:35.363Z"}
+{"level":"info","message":"Processing batch 1/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:35.364Z"}
+{"level":"info","message":"Batch 1 completed in 4.40s. Total created: 50/500","service":"seed-script","timestamp":"2026-02-06T20:38:39.765Z"}
+{"level":"info","message":"Processing batch 2/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:39.766Z"}
+{"level":"info","message":"Batch 2 completed in 1.84s. Total created: 100/500","service":"seed-script","timestamp":"2026-02-06T20:38:41.606Z"}
+{"level":"info","message":"Processing batch 3/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:41.607Z"}
+{"level":"info","message":"Batch 3 completed in 1.54s. Total created: 150/500","service":"seed-script","timestamp":"2026-02-06T20:38:43.145Z"}
+{"level":"info","message":"Processing batch 4/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:43.146Z"}
+{"level":"info","message":"Batch 4 completed in 1.53s. Total created: 200/500","service":"seed-script","timestamp":"2026-02-06T20:38:44.678Z"}
+{"level":"info","message":"Processing batch 5/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:44.679Z"}
+{"level":"info","message":"Batch 5 completed in 1.14s. Total created: 250/500","service":"seed-script","timestamp":"2026-02-06T20:38:45.816Z"}
+{"level":"info","message":"Processing batch 6/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:45.816Z"}
+{"level":"info","message":"Batch 6 completed in 1.22s. Total created: 300/500","service":"seed-script","timestamp":"2026-02-06T20:38:47.037Z"}
+{"level":"info","message":"Processing batch 7/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:47.038Z"}
+{"level":"info","message":"Batch 7 completed in 1.23s. Total created: 350/500","service":"seed-script","timestamp":"2026-02-06T20:38:48.267Z"}
+{"level":"info","message":"Processing batch 8/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:48.268Z"}
+{"level":"info","message":"Batch 8 completed in 1.20s. Total created: 400/500","service":"seed-script","timestamp":"2026-02-06T20:38:49.471Z"}
+{"level":"info","message":"Processing batch 9/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:49.472Z"}
+{"level":"info","message":"Batch 9 completed in 1.55s. Total created: 450/500","service":"seed-script","timestamp":"2026-02-06T20:38:51.027Z"}
+{"level":"info","message":"Processing batch 10/10 (50 signups)...","service":"seed-script","timestamp":"2026-02-06T20:38:51.028Z"}
+{"level":"info","message":"Batch 10 completed in 1.23s. Total created: 500/500","service":"seed-script","timestamp":"2026-02-06T20:38:52.258Z"}
+{"level":"info","message":"============================================================","service":"seed-script","timestamp":"2026-02-06T20:38:53.793Z"}
+{"level":"info","message":"Seeding completed successfully!","service":"seed-script","timestamp":"2026-02-06T20:38:53.794Z"}
+{"level":"info","message":"Total time: 16.89s","service":"seed-script","timestamp":"2026-02-06T20:38:53.794Z"}
+{"level":"info","message":"Total signups created: 500","service":"seed-script","timestamp":"2026-02-06T20:38:53.795Z"}
+{"level":"info","message":"","service":"seed-script","timestamp":"2026-02-06T20:38:53.795Z"}
+{"level":"info","message":"Status distribution:","service":"seed-script","timestamp":"2026-02-06T20:38:53.795Z"}
+{"level":"info","message":"  SENT: 201","service":"seed-script","timestamp":"2026-02-06T20:38:53.795Z"}
+{"level":"info","message":"  PENDING: 252","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"  FAILED: 48","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"Class type distribution:","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"  TYPE_6: 70","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"  TYPE_2: 75","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"  TYPE_4: 96","service":"seed-script","timestamp":"2026-02-06T20:38:53.796Z"}
+{"level":"info","message":"  TYPE_5: 102","service":"seed-script","timestamp":"2026-02-06T20:38:53.797Z"}
+{"level":"info","message":"  TYPE_1: 80","service":"seed-script","timestamp":"2026-02-06T20:38:53.797Z"}
+{"level":"info","message":"  TYPE_3: 78","service":"seed-script","timestamp":"2026-02-06T20:38:53.797Z"}
+{"level":"info","message":"============================================================","service":"seed-script","timestamp":"2026-02-06T20:38:53.797Z"}
+{"level":"info","message":"Database connection closed","service":"seed-script","timestamp":"2026-02-06T20:38:53.800Z"}

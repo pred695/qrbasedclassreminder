@@ -1,15 +1,18 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import useAdminStore from '@store/adminStore';
+import useReminderStore from '@store/reminderStore';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/shared/Card';
 import Button from '@components/shared/Button';
 import SearchBar from '@components/admin/SearchBar';
 import TableFilters from '@components/admin/TableFilters';
 import SignupsTable from '@components/admin/SignupsTable';
 import Pagination from '@components/admin/Pagination';
+import ReminderDetailModal from '@components/admin/ReminderDetailModal';
 import Spinner from '@components/shared/Spinner';
 import Alert, { AlertDescription } from '@components/shared/Alert';
-import { Download, RefreshCw, Users } from 'lucide-react';
+import { Download, RefreshCw, Users, Clock } from 'lucide-react';
 import { exportSignupsToCSV, generateExportFilename } from '@utils/csvExport';
+import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const {
@@ -40,6 +43,12 @@ const AdminDashboard = () => {
     getFilteredAndSearchedSignups,
   } = useAdminStore();
 
+  const { sendReminderAsync, sendingReminders } = useReminderStore();
+
+  // Modal state
+  const [selectedSignup, setSelectedSignup] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+
   // Fetch data on mount
   useEffect(() => {
     fetchAllSignups();
@@ -61,17 +70,29 @@ const AdminDashboard = () => {
   };
 
   const handleFilterChange = (filterKey, value) => {
-    if (filterKey === 'dateRange') {
-      setFilter(filterKey, value);
-    } else {
-      setFilter(filterKey, value);
+    setFilter(filterKey, value);
+  };
+
+  const handleSendReminder = async (signupId) => {
+    try {
+      await sendReminderAsync(signupId);
+      toast.success('Reminder sent successfully');
+      await refreshData();
+    } catch (error) {
+      toast.error(`Failed to send reminder: ${error.message}`);
     }
+  };
+
+  const handleViewDetails = (signup) => {
+    setSelectedSignup(signup);
+    setIsDetailModalOpen(true);
   };
 
   const paginatedSignups = getPaginatedSignups();
   const totalPages = getTotalPages();
   const totalCount = getTotalCount();
   const activeFiltersCount = getActiveFiltersCount();
+  const pendingCount = allSignups.filter((s) => s.status === 'PENDING').length;
 
   return (
     <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
@@ -95,7 +116,7 @@ const AdminDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Signups</CardTitle>
@@ -103,6 +124,16 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{allSignups.length}</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending Reminders</CardTitle>
+              <Clock className="h-4 w-4 text-yellow-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
             </CardContent>
           </Card>
 
@@ -190,6 +221,9 @@ const AdminDashboard = () => {
                   onSort={toggleSortDirection}
                   onSelectSignup={toggleSignupSelection}
                   selectedSignupIds={selectedSignupIds}
+                  onSendReminder={handleSendReminder}
+                  onViewDetails={handleViewDetails}
+                  sendingReminders={sendingReminders}
                 />
 
                 {/* Pagination */}
@@ -210,6 +244,14 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      {/* Reminder Detail Modal */}
+      <ReminderDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => setIsDetailModalOpen(false)}
+        signup={selectedSignup}
+        onRefresh={refreshData}
+      />
     </div>
   );
 };
