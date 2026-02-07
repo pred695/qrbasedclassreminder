@@ -29,6 +29,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const studentRoutes = require("./routes/studentRoutes");
 const signupRoutes = require("./routes/signupRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
+const templateRoutes = require("./routes/templateRoutes");
 
 // Cron jobs
 const { startReminderCron } = require("./jobs/reminderCron");
@@ -304,6 +305,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/students", studentRoutes); // Public student routes
 app.use("/api/admin/signups", signupRoutes); // Admin signup management routes (auth temporarily disabled)
 app.use("/api/admin/reminders", reminderRoutes); // Admin reminder management routes
+app.use("/api/admin/templates", templateRoutes); // Template management routes
 
 // Error logging middleware
 app.use(errorLoggingMiddleware(logger));
