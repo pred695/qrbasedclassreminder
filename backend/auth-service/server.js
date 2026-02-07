@@ -117,6 +117,8 @@ app.use(compression());
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
+  // Skip rate limiting for health checks (Render pings every 5 seconds)
+  skip: (req) => req.path === "/health" || req.path === "/",
   message: {
     success: false,
     error: {
