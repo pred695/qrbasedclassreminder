@@ -2,10 +2,12 @@ import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import StudentSignup from '@pages/StudentSignup';
 import AdminDashboard from '@pages/AdminDashboard';
+import AdminLogin from '@pages/AdminLogin';
 import TemplateManager from '@pages/TemplateManager';
 import OptOutConfirmation from '@pages/OptOutConfirmation';
 import QRGenerator from '@pages/QRGenerator';
 import NotFound from '@pages/NotFound';
+import ProtectedRoute from '@components/auth/ProtectedRoute';
 
 function App() {
   return (
@@ -36,15 +38,37 @@ function App() {
         }}
       />
       <Routes>
-        {/* Student Routes */}
+        {/* Public Routes */}
         <Route path="/signup" element={<StudentSignup />} />
         <Route path="/signup/:classType" element={<StudentSignup />} />
         <Route path="/opt-out/:studentId" element={<OptOutConfirmation />} />
+        <Route path="/login" element={<AdminLogin />} />
 
-        {/* Admin Routes */}
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/admin/templates" element={<TemplateManager />} />
-        <Route path="/admin/qr-generator" element={<QRGenerator />} />
+        {/* Protected Admin Routes */}
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute>
+              <AdminDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/templates"
+          element={
+            <ProtectedRoute>
+              <TemplateManager />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/qr-generator"
+          element={
+            <ProtectedRoute>
+              <QRGenerator />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Default */}
         <Route path="/" element={<QRGenerator />} />
@@ -55,3 +79,4 @@ function App() {
 }
 
 export default App;
+

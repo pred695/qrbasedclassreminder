@@ -108,8 +108,11 @@ const createLogger = (serviceName = "app", logLevel = "info") => {
     }),
   ];
 
-  // Add file transports only if not in test environment
-  if (process.env.NODE_ENV !== "test") {
+  // Add file transports only if not in test environment or serverless environment
+  // Vercel sets VERCEL=1 environment variable
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+
+  if (process.env.NODE_ENV !== "test" && !isServerless) {
     transports.push(
       // All logs file
       new winston.transports.File({
@@ -146,19 +149,35 @@ const createLogger = (serviceName = "app", logLevel = "info") => {
   });
 
   // Handle uncaught exceptions and unhandled rejections
-  logger.exceptions.handle(
-    new winston.transports.File({
-      filename: path.join(logsDir, `${serviceName}-exceptions.log`),
-      format: fileFormat,
-    }),
-  );
+  // Only write to file in non-serverless environments
+  if (!isServerless) {
+    logger.exceptions.handle(
+      new winston.transports.File({
+        filename: path.join(logsDir, `${serviceName}-exceptions.log`),
+        format: fileFormat,
+      }),
+    );
 
-  logger.rejections.handle(
-    new winston.transports.File({
-      filename: path.join(logsDir, `${serviceName}-rejections.log`),
-      format: fileFormat,
-    }),
-  );
+    logger.rejections.handle(
+      new winston.transports.File({
+        filename: path.join(logsDir, `${serviceName}-rejections.log`),
+        format: fileFormat,
+      }),
+    );
+  } else {
+    // In serverless, just use console for exceptions and rejections
+    logger.exceptions.handle(
+      new winston.transports.Console({
+        format: consoleFormat,
+      }),
+    );
+
+    logger.rejections.handle(
+      new winston.transports.Console({
+        format: consoleFormat,
+      }),
+    );
+  }
 
   // Add custom methods for better developer experience
   logger.request = (req, message = "", meta = {}) => {

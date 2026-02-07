@@ -101,6 +101,7 @@ const updateSignupSchema = z
     .object({
         classType: classTypeSchema.optional(),
         reminderScheduledDate: z.coerce.date().optional(),
+        reminderSentAt: z.coerce.date().nullable().optional(),
         status: signupStatusSchema.optional(),
         notes: z.string().max(1000, "Notes must be less than 1000 characters").optional(),
     })
