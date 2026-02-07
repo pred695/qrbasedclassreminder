@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
+    "@sendgrid/mail": "^8.1.6",
     "bcryptjs": "^3.0.2",
     "colors": "^1.4.0",
     "compression": "^1.8.0",
