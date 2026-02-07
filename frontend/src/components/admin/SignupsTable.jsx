@@ -103,18 +103,27 @@ const SignupsTable = ({
                 </TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    {signup.student?.email && (
-                      <div className="flex items-center gap-1.5 text-sm">
-                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="font-medium">{formatEmail(signup.student.email)}</span>
-                      </div>
-                    )}
-                    {signup.student?.phone && (
-                      <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Phone className="h-3.5 w-3.5" />
-                        <span>{formatPhone(signup.student.phone)}</span>
-                      </div>
-                    )}
+                    {/* Student Name */}
+                    <div className="font-medium text-foreground">
+                      {signup.student?.name ||
+                        (signup.student?.email ? signup.student.email.split('@')[0] :
+                          signup.student?.phone || 'Unknown')}
+                    </div>
+                    {/* Contact Info */}
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                      {signup.student?.email && (
+                        <div className="flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          <span>{formatEmail(signup.student.email)}</span>
+                        </div>
+                      )}
+                      {signup.student?.phone && (
+                        <div className="flex items-center gap-1">
+                          <Phone className="h-3 w-3" />
+                          <span>{formatPhone(signup.student.phone)}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </TableCell>
                 <TableCell>

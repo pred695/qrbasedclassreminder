@@ -6,6 +6,7 @@ import { createSignup } from '@services/studentService';
 import toast from 'react-hot-toast';
 
 const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [classType, setClassType] = useState('');
@@ -28,6 +29,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
         try {
             const signupData = {
                 classType,
+                ...(name && { name: name.trim() }),
                 ...(email && { email }),
                 ...(phone && { phone }),
             };
@@ -36,6 +38,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
             toast.success('Student added successfully!');
 
             // Reset form
+            setName('');
             setEmail('');
             setPhone('');
             setClassType('');
@@ -74,6 +77,22 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
 
                 {/* Form */}
                 <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Name */}
+                    <div className="space-y-2">
+                        <label htmlFor="name" className="text-sm font-medium text-foreground">
+                            Student Name
+                        </label>
+                        <input
+                            id="name"
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            placeholder="John Doe"
+                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                            disabled={isSubmitting}
+                        />
+                    </div>
+
                     {/* Email */}
                     <div className="space-y-2">
                         <label htmlFor="email" className="text-sm font-medium text-foreground">
