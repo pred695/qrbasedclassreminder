@@ -41,20 +41,23 @@ const extractRefreshToken = (req) => {
  * Get cookie options for setting authentication cookies
  */
 const getCookieOptions = (isRefreshToken = false) => {
+  const isProduction = process.env.NODE_ENV === "production";
+
   const baseOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    domain: process.env.COOKIE_DOMAIN || undefined,
+    secure: isProduction,
+    // Use 'lax' since we're proxying through Vercel (same-origin)
+    sameSite: "lax",
+    path: "/",
   };
 
   if (isRefreshToken) {
     baseOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
-    baseOptions.path = "/";
   } else {
     baseOptions.maxAge = 15 * 60 * 1000; // 15 minutes
   }
 
+  logger.debug("Cookie options", { isRefreshToken, isProduction, options: baseOptions });
   return baseOptions;
 };
 
