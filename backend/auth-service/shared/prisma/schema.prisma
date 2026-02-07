@@ -138,6 +138,7 @@ model Student {
   id            String   @id @default(uuid()) @db.Uuid
   email         String?  @unique
   phone         String?  @unique
+  name          String?
   optedOutEmail Boolean  @default(false)
   optedOutSms   Boolean  @default(false)
   createdAt     DateTime @default(now())
