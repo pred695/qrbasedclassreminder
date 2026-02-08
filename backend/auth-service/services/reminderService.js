@@ -4,6 +4,7 @@ const deliveryLogRepository = require("../repositories/deliveryLogRepository");
 const templateRepository = require("../repositories/templateRepository");
 const emailService = require("./emailService");
 const smsService = require("./smsService");
+const { generateReminderEmailHtml, generateReminderEmailText } = require("../templates/emailTemplates");
 const { NotFoundError, transformError } = require("../shared/utils/errors");
 const { createLogger } = require("../shared/utils/logger");
 
@@ -71,8 +72,12 @@ const sendReminder = async (signupId) => {
         const classTypeName = CLASS_TYPE_LABELS[signup.classType] || signup.classType;
         const appUrl = process.env.APP_BASE_URL || "https://yourapp.com";
 
+        // Get student name - fallback to email prefix or generic greeting
+        const studentName = student.name || (student.email ? student.email.split('@')[0] : null);
+
         const templateVariables = {
             classTypeName,
+            studentName: studentName || '',
             scheduleLink: appUrl,
             optOutLink: `${appUrl}/opt-out/${student.id}`,
             studentEmail: student.email || "",
@@ -86,20 +91,39 @@ const sendReminder = async (signupId) => {
         if (student.email && !student.optedOutEmail) {
             const emailTemplate = await templateRepository.findByClassTypeAndChannel(signup.classType, "EMAIL");
 
-            let subject, body;
+            let subject, body, html;
             if (emailTemplate) {
                 subject = interpolateTemplate(emailTemplate.subject || "", templateVariables);
                 body = interpolateTemplate(emailTemplate.body, templateVariables);
+                // Generate HTML version from template
+                html = generateReminderEmailHtml({
+                    studentName,
+                    classTypeName,
+                    scheduleLink: appUrl,
+                    optOutLink: templateVariables.optOutLink,
+                });
             } else {
                 const defaultMsg = buildDefaultMessage(classTypeName, "EMAIL");
                 subject = defaultMsg.subject;
-                body = defaultMsg.body;
+                body = generateReminderEmailText({
+                    studentName,
+                    classTypeName,
+                    scheduleLink: appUrl,
+                    optOutLink: templateVariables.optOutLink,
+                });
+                html = generateReminderEmailHtml({
+                    studentName,
+                    classTypeName,
+                    scheduleLink: appUrl,
+                    optOutLink: templateVariables.optOutLink,
+                });
             }
 
             emailResult = await emailService.sendEmail({
                 to: student.email,
                 subject,
                 body,
+                html,
             });
 
             // Log delivery
