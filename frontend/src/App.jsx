@@ -5,6 +5,7 @@ import AdminDashboard from '@pages/AdminDashboard';
 import AdminLogin from '@pages/AdminLogin';
 import TemplateManager from '@pages/TemplateManager';
 import OptOutConfirmation from '@pages/OptOutConfirmation';
+import ClassRegistration from '@pages/ClassRegistration';
 import QRGenerator from '@pages/QRGenerator';
 import NotFound from '@pages/NotFound';
 import ProtectedRoute from '@components/auth/ProtectedRoute';
@@ -70,8 +71,8 @@ function App() {
           }
         />
 
-        {/* Default */}
-        <Route path="/" element={<QRGenerator />} />
+        {/* Default - Student Registration */}
+        <Route path="/" element={<ClassRegistration />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </>
