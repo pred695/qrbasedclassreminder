@@ -87,8 +87,13 @@ const sendReminder = async (signupId) => {
         let emailResult = null;
         let smsResult = null;
 
-        // 2. Send email if student has email and not opted out
-        if (student.email && !student.optedOutEmail) {
+        // Get reminder preference (defaults to BOTH if not set)
+        const preference = student.reminderPreference || 'BOTH';
+        const shouldSendEmail = (preference === 'EMAIL' || preference === 'BOTH') && student.email && !student.optedOutEmail;
+        const shouldSendSms = (preference === 'SMS' || preference === 'BOTH') && student.phone && !student.optedOutSms;
+
+        // 2. Send email if preference allows and student has email
+        if (shouldSendEmail) {
             const emailTemplate = await templateRepository.findByClassTypeAndChannel(signup.classType, "EMAIL");
 
             let subject, body, html;
@@ -137,8 +142,8 @@ const sendReminder = async (signupId) => {
             });
         }
 
-        // 3. Send SMS if student has phone and not opted out
-        if (student.phone && !student.optedOutSms) {
+        // 3. Send SMS if preference allows and student has phone
+        if (shouldSendSms) {
             const smsTemplate = await templateRepository.findByClassTypeAndChannel(signup.classType, "SMS");
 
             let body;
