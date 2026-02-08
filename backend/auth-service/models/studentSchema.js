@@ -45,6 +45,8 @@ const messageChannelSchema = z.enum(["EMAIL", "SMS"], {
 // ============================================
 // Student schemas
 // ============================================
+// Reminder preference enum
+const reminderPreferenceSchema = z.enum(['EMAIL', 'SMS', 'BOTH']);
 
 // Student creation schema (for internal use)
 const createStudentSchema = z
@@ -52,6 +54,7 @@ const createStudentSchema = z
         email: emailSchema.nullish(), // Accept null, undefined, or valid string
         phone: phoneSchema.nullish(), // Accept null, undefined, or valid string
         name: z.string().max(255).optional(),
+        reminderPreference: reminderPreferenceSchema.optional().default('BOTH'),
         optedOutEmail: z.boolean().optional().default(false),
         optedOutSms: z.boolean().optional().default(false),
     })
@@ -66,6 +69,7 @@ const updateStudentSchema = z
         email: emailSchema.optional(),
         phone: phoneSchema.optional(),
         name: z.string().max(255).optional(),
+        reminderPreference: reminderPreferenceSchema.optional(),
         optedOutEmail: z.boolean().optional(),
         optedOutSms: z.boolean().optional(),
     })

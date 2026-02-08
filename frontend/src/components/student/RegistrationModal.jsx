@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import Button from '@components/shared/Button';
 import { CLASS_TYPE_LABELS } from '@utils/constants';
@@ -9,7 +9,25 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
+    const [reminderPreference, setReminderPreference] = useState('BOTH');
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Show preference selector only when both email and phone are provided
+    const showPreferenceSelector = email.trim() && phone.trim();
+
+    // Auto-select preference based on what's provided
+    useEffect(() => {
+        if (email.trim() && !phone.trim()) {
+            setReminderPreference('EMAIL');
+        } else if (!email.trim() && phone.trim()) {
+            setReminderPreference('SMS');
+        } else if (email.trim() && phone.trim()) {
+            // Keep current preference or default to BOTH
+            if (reminderPreference !== 'EMAIL' && reminderPreference !== 'SMS') {
+                setReminderPreference('BOTH');
+            }
+        }
+    }, [email, phone]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,6 +44,7 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
                 ...(name && { name: name.trim() }),
                 ...(email && { email: email.trim() }),
                 ...(phone && { phone: phone.trim() }),
+                reminderPreference,
             };
 
             const result = await createSignup(signupData);
@@ -35,6 +54,7 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
             setName('');
             setEmail('');
             setPhone('');
+            setReminderPreference('BOTH');
 
             onSuccess?.(result, signupData);
         } catch (error) {
@@ -53,6 +73,7 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
             setName('');
             setEmail('');
             setPhone('');
+            setReminderPreference('BOTH');
             onClose();
         }
     };
@@ -68,7 +89,7 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
             />
 
             {/* Modal */}
-            <div className="relative w-full max-w-md mx-4 rounded-2xl bg-background p-6 shadow-2xl">
+            <div className="relative w-full max-w-md mx-4 rounded-2xl bg-background p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
                 {/* Header */}
                 <div className="mb-6 flex items-start justify-between">
                     <div>
@@ -135,6 +156,35 @@ const RegistrationModal = ({ isOpen, classType, onClose, onSuccess }) => {
                             disabled={isSubmitting}
                         />
                     </div>
+
+                    {/* Reminder Preference - only show when both email and phone are provided */}
+                    {showPreferenceSelector && (
+                        <div className="space-y-3 p-4 rounded-xl border bg-muted/30">
+                            <label className="text-sm font-medium text-foreground">
+                                How would you like to receive reminders?
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                                {[
+                                    { value: 'EMAIL', label: 'Email Only' },
+                                    { value: 'SMS', label: 'SMS Only' },
+                                    { value: 'BOTH', label: 'Both' },
+                                ].map((option) => (
+                                    <button
+                                        key={option.value}
+                                        type="button"
+                                        onClick={() => setReminderPreference(option.value)}
+                                        disabled={isSubmitting}
+                                        className={`px-4 py-2 text-sm rounded-lg border transition-all ${reminderPreference === option.value
+                                                ? 'bg-primary text-primary-foreground border-primary'
+                                                : 'bg-background text-foreground border-input hover:bg-muted'
+                                            }`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     <p className="text-xs text-muted-foreground">
                         * At least email or phone is required for reminder notifications

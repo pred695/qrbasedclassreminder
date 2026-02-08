@@ -30,6 +30,7 @@ const STUDENT_FIELDS = {
         email: true,
         phone: true,
         name: true,
+        reminderPreference: true,
         optedOutEmail: true,
         optedOutSms: true,
         createdAt: true,
@@ -40,6 +41,7 @@ const STUDENT_FIELDS = {
         email: true,
         phone: true,
         name: true,
+        reminderPreference: true,
     },
 };
 
