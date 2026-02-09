@@ -42,14 +42,22 @@ const extractRefreshToken = (req) => {
  */
 const getCookieOptions = (isRefreshToken = false) => {
   const isProduction = process.env.NODE_ENV === "production";
+  const cookieDomain = process.env.COOKIE_DOMAIN;
 
   const baseOptions = {
     httpOnly: true,
     secure: isProduction,
-    // Use 'lax' since we're proxying through Vercel (same-origin)
-    sameSite: "lax",
+    // Use 'none' for cross-origin requests in production (frontend and backend on different domains)
+    // Use 'lax' for same-origin (when using Vercel rewrites or local dev)
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
   };
+
+  // Only set domain if explicitly provided and valid
+  // Don't set domain for localhost or when frontend/backend are on different subdomains
+  if (cookieDomain && cookieDomain !== "localhost" && cookieDomain !== "") {
+    baseOptions.domain = cookieDomain;
+  }
 
   if (isRefreshToken) {
     baseOptions.maxAge = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -57,7 +65,7 @@ const getCookieOptions = (isRefreshToken = false) => {
     baseOptions.maxAge = 15 * 60 * 1000; // 15 minutes
   }
 
-  logger.debug("Cookie options", { isRefreshToken, isProduction, options: baseOptions });
+  logger.debug("Cookie options", { isRefreshToken, isProduction, cookieDomain, options: baseOptions });
   return baseOptions;
 };
 

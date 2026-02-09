@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import StudentSignup from '@pages/StudentSignup';
@@ -9,8 +10,16 @@ import ClassRegistration from '@pages/ClassRegistration';
 import QRGenerator from '@pages/QRGenerator';
 import NotFound from '@pages/NotFound';
 import ProtectedRoute from '@components/auth/ProtectedRoute';
+import useAuthStore from '@store/authStore';
 
 function App() {
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  // Check authentication status on app load
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
   return (
     <>
       <Toaster
