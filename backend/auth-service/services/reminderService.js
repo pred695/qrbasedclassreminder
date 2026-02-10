@@ -1,9 +1,11 @@
 // backend/auth-service/services/reminderService.js
 const signupRepository = require("../repositories/signupRepository");
+const studentRepository = require("../repositories/studentRepository");
 const deliveryLogRepository = require("../repositories/deliveryLogRepository");
 const templateRepository = require("../repositories/templateRepository");
 const emailService = require("./emailService");
 const smsService = require("./smsService");
+const { generateOtp } = require("./unsubscribeService");
 const { generateReminderEmailHtml, generateReminderEmailText } = require("../templates/emailTemplates");
 const { NotFoundError, transformError } = require("../shared/utils/errors");
 const { createLogger } = require("../shared/utils/logger");
@@ -75,11 +77,22 @@ const sendReminder = async (signupId) => {
         // Get student name - fallback to email prefix or generic greeting
         const studentName = student.name || (student.email ? student.email.split('@')[0] : null);
 
+        // Generate and store OTP for unsubscribe verification
+        const otpCode = generateOtp();
+        await studentRepository.updateOptOutOtp(student.id, otpCode);
+        logger.debug("Generated unsubscribe OTP for student", { studentId: student.id });
+
+        // Build unsubscribe link with pre-filled destination
+        const unsubscribeDestination = student.email || student.phone;
+        const unsubscribeLink = `${appUrl}/unsubscribe?${student.email ? 'email=' + encodeURIComponent(student.email) : 'phone=' + encodeURIComponent(student.phone)}`;
+
         const templateVariables = {
             classTypeName,
             studentName: studentName || '',
             scheduleLink: appUrl,
-            optOutLink: `${appUrl}/opt-out/${student.id}`,
+            optOutLink: unsubscribeLink,
+            unsubscribeLink,
+            otpCode,
             studentEmail: student.email || "",
             studentPhone: student.phone || "",
         };
@@ -106,6 +119,7 @@ const sendReminder = async (signupId) => {
                     classTypeName,
                     scheduleLink: appUrl,
                     optOutLink: templateVariables.optOutLink,
+                    otpCode,
                 });
             } else {
                 const defaultMsg = buildDefaultMessage(classTypeName, "EMAIL");
@@ -115,12 +129,14 @@ const sendReminder = async (signupId) => {
                     classTypeName,
                     scheduleLink: appUrl,
                     optOutLink: templateVariables.optOutLink,
+                    otpCode,
                 });
                 html = generateReminderEmailHtml({
                     studentName,
                     classTypeName,
                     scheduleLink: appUrl,
                     optOutLink: templateVariables.optOutLink,
+                    otpCode,
                 });
             }
 
@@ -153,6 +169,9 @@ const sendReminder = async (signupId) => {
                 const defaultMsg = buildDefaultMessage(classTypeName, "SMS");
                 body = defaultMsg.body;
             }
+
+            // Append unsubscribe info with OTP to SMS
+            body += `\n\nUnsubscribe code: ${otpCode}\nUnsubscribe: ${unsubscribeLink}`;
 
             smsResult = await smsService.sendSms({
                 to: student.phone,
