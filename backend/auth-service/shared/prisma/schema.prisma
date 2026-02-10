@@ -148,6 +148,7 @@ model Student {
   reminderPreference ReminderPreference @default(BOTH)
   optedOutEmail      Boolean            @default(false)
   optedOutSms        Boolean            @default(false)
+  optOutOtp          String?            // OTP for unsubscribe verification (null when not active)
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 

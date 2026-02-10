@@ -2,10 +2,10 @@
 
 /**
  * Generate a styled HTML email template
- * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink }
+ * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink, otpCode }
  * @returns {string} HTML email content
  */
-const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, optOutLink }) => {
+const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, optOutLink, otpCode }) => {
     const displayName = studentName || 'there';
 
     return `
@@ -68,14 +68,28 @@ const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, o
                         </td>
                     </tr>
                     
+                    <!-- Unsubscribe Section -->
+                    <tr>
+                        <td style="padding: 24px 0;">
+                            <div style="background-color: #fafafa; border-radius: 8px; padding: 16px; text-align: center; border: 1px solid #e4e4e7;">
+                                <p style="margin: 0 0 8px 0; font-size: 12px; color: #71717a;">
+                                    To unsubscribe from reminders, use this code:
+                                </p>
+                                <p style="margin: 0 0 12px 0; font-size: 24px; font-weight: 700; color: #18181b; letter-spacing: 4px;">
+                                    ${otpCode || '------'}
+                                </p>
+                                <a href="${optOutLink}" style="display: inline-block; color: #3b82f6; font-size: 13px; text-decoration: underline;">
+                                    Click here to unsubscribe
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
                     <!-- Footer -->
                     <tr>
-                        <td style="padding: 24px 0; text-align: center;">
-                            <p style="margin: 0 0 8px 0; font-size: 13px; color: #a1a1aa;">
+                        <td style="padding: 0 0 24px 0; text-align: center;">
+                            <p style="margin: 0; font-size: 13px; color: #a1a1aa;">
                                 Student Training Portal
-                            </p>
-                            <p style="margin: 0; font-size: 12px; color: #a1a1aa;">
-                                <a href="${optOutLink}" style="color: #71717a; text-decoration: underline;">Unsubscribe from reminders</a>
                             </p>
                         </td>
                     </tr>
@@ -90,10 +104,10 @@ const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, o
 
 /**
  * Generate plain text email for fallback
- * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink }
+ * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink, otpCode }
  * @returns {string} Plain text email content
  */
-const generateReminderEmailText = ({ studentName, classTypeName, scheduleLink, optOutLink }) => {
+const generateReminderEmailText = ({ studentName, classTypeName, scheduleLink, optOutLink, otpCode }) => {
     const displayName = studentName || 'there';
 
     return `Hello, ${displayName}!
@@ -108,7 +122,10 @@ Schedule Training: ${scheduleLink}
 
 ---
 Student Training Portal
-To unsubscribe: ${optOutLink}`;
+
+To unsubscribe from reminders:
+Your unsubscribe code: ${otpCode || '------'}
+Click here: ${optOutLink}`;
 };
 
 module.exports = {

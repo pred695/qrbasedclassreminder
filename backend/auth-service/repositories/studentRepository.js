@@ -33,6 +33,7 @@ const STUDENT_FIELDS = {
         reminderPreference: true,
         optedOutEmail: true,
         optedOutSms: true,
+        optOutOtp: true,
         createdAt: true,
         updatedAt: true,
     },
@@ -42,6 +43,16 @@ const STUDENT_FIELDS = {
         phone: true,
         name: true,
         reminderPreference: true,
+    },
+    // For OTP verification - includes OTP field
+    withOtp: {
+        id: true,
+        email: true,
+        phone: true,
+        name: true,
+        optOutOtp: true,
+        optedOutEmail: true,
+        optedOutSms: true,
     },
 };
 
@@ -294,6 +305,95 @@ const findStudents = async (filters = {}, options = {}) => {
     }
 };
 
+/**
+ * Update opt-out OTP for a student
+ * @param {string} studentId - Student ID
+ * @param {string} otp - OTP code to set
+ * @returns {Promise<Object>} Updated student
+ */
+const updateOptOutOtp = async (studentId, otp) => {
+    try {
+        const validId = uuidSchema.parse(studentId);
+        const db = await getDB();
+
+        const updatedStudent = await db.student.update({
+            where: { id: validId },
+            data: {
+                optOutOtp: otp,
+                updatedAt: new Date(),
+            },
+            select: STUDENT_FIELDS.minimal,
+        });
+
+        logger.info("Student opt-out OTP updated", { studentId: validId });
+        return updatedStudent;
+    } catch (error) {
+        logger.error("Failed to update opt-out OTP", { error: error.message, studentId });
+        throw transformError(error, "updateOptOutOtp");
+    }
+};
+
+/**
+ * Clear opt-out OTP for a student (after successful unsubscription)
+ * @param {string} studentId - Student ID
+ * @returns {Promise<Object>} Updated student
+ */
+const clearOptOutOtp = async (studentId) => {
+    try {
+        const validId = uuidSchema.parse(studentId);
+        const db = await getDB();
+
+        const updatedStudent = await db.student.update({
+            where: { id: validId },
+            data: {
+                optOutOtp: null,
+                updatedAt: new Date(),
+            },
+            select: STUDENT_FIELDS.minimal,
+        });
+
+        logger.info("Student opt-out OTP cleared", { studentId: validId });
+        return updatedStudent;
+    } catch (error) {
+        logger.error("Failed to clear opt-out OTP", { error: error.message, studentId });
+        throw transformError(error, "clearOptOutOtp");
+    }
+};
+
+/**
+ * Find student by email or phone with OTP field
+ * @param {string} destination - Email or phone
+ * @returns {Promise<Object|null>} Student object or null
+ */
+const findByDestinationWithOtp = async (destination) => {
+    try {
+        const db = await getDB();
+        const trimmedDest = destination.trim();
+
+        // Check if it looks like an email or phone
+        const isEmail = trimmedDest.includes("@");
+
+        let student;
+        if (isEmail) {
+            student = await db.student.findUnique({
+                where: { email: trimmedDest.toLowerCase() },
+                select: STUDENT_FIELDS.withOtp,
+            });
+        } else {
+            // Try phone lookup
+            student = await db.student.findUnique({
+                where: { phone: trimmedDest },
+                select: STUDENT_FIELDS.withOtp,
+            });
+        }
+
+        return student;
+    } catch (error) {
+        logger.error("Failed to find student by destination", { error: error.message });
+        throw transformError(error, "findByDestinationWithOtp");
+    }
+};
+
 module.exports = {
     createStudent,
     findByEmail,
@@ -302,6 +402,9 @@ module.exports = {
     checkExists,
     updateStudent,
     updateOptOutStatus,
+    updateOptOutOtp,
+    clearOptOutOtp,
+    findByDestinationWithOtp,
     findStudents,
     STUDENT_FIELDS,
 };

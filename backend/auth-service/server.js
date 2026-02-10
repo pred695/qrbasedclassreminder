@@ -30,6 +30,7 @@ const studentRoutes = require("./routes/studentRoutes");
 const signupRoutes = require("./routes/signupRoutes");
 const reminderRoutes = require("./routes/reminderRoutes");
 const templateRoutes = require("./routes/templateRoutes");
+const unsubscribeRoutes = require("./routes/unsubscribeRoutes");
 
 // Cron jobs
 const { startReminderCron } = require("./jobs/reminderCron");
@@ -303,6 +304,7 @@ app.get("/health", async (req, res) => {
 // Admin API Routes
 app.use("/api/admin", adminRoutes);
 app.use("/api/students", studentRoutes); // Public student routes
+app.use("/api/students/unsubscribe", unsubscribeRoutes); // Public unsubscribe routes with OTP verification
 app.use("/api/admin/signups", signupRoutes); // Admin signup management routes (auth temporarily disabled)
 app.use("/api/admin/reminders", reminderRoutes); // Admin reminder management routes
 app.use("/api/admin/templates", templateRoutes); // Template management routes

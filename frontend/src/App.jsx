@@ -6,6 +6,7 @@ import AdminDashboard from '@pages/AdminDashboard';
 import AdminLogin from '@pages/AdminLogin';
 import TemplateManager from '@pages/TemplateManager';
 import OptOutConfirmation from '@pages/OptOutConfirmation';
+import UnsubscribeFlow from '@pages/UnsubscribeFlow';
 import ClassRegistration from '@pages/ClassRegistration';
 import QRGenerator from '@pages/QRGenerator';
 import NotFound from '@pages/NotFound';
@@ -52,6 +53,7 @@ function App() {
         <Route path="/signup" element={<StudentSignup />} />
         <Route path="/signup/:classType" element={<StudentSignup />} />
         <Route path="/opt-out/:studentId" element={<OptOutConfirmation />} />
+        <Route path="/unsubscribe" element={<UnsubscribeFlow />} />
         <Route path="/login" element={<AdminLogin />} />
 
         {/* Protected Admin Routes */}
