@@ -26,20 +26,17 @@ const AdminLogin = () => {
             return;
         }
 
-        // TODO: Fix real authentication later - bypassing for now
-        // Just set isAuthenticated to true locally without API call
         setIsSubmitting(true);
 
-        // Fake login - just set authenticated state
-        useAuthStore.setState({
-            isAuthenticated: true,
-            admin: { email },
-            isLoading: false
-        });
-
-        toast.success('Login successful!');
-        navigate(from, { replace: true });
-        setIsSubmitting(false);
+        try {
+            await login(email, password);
+            toast.success('Login successful!');
+            navigate(from, { replace: true });
+        } catch (err) {
+            toast.error(err.message || 'Login failed. Please check your credentials.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
