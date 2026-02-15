@@ -2,6 +2,7 @@
 const winston = require("winston");
 const morgan = require("morgan");
 const path = require("path");
+const fs = require("fs");
 require("colors");
 
 // Custom log levels
@@ -108,11 +109,19 @@ const createLogger = (serviceName = "app", logLevel = "info") => {
     }),
   ];
 
-  // Add file transports only if not in test environment or serverless environment
-  // Vercel sets VERCEL=1 environment variable
-  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME;
+  // Add file transports only if not in test environment or serverless/container environment
+  const isServerless = process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME || process.env.RENDER;
 
   if (process.env.NODE_ENV !== "test" && !isServerless) {
+    // Ensure logs directory exists
+    try {
+      if (!fs.existsSync(logsDir)) {
+        fs.mkdirSync(logsDir, { recursive: true });
+      }
+    } catch (err) {
+      console.error("Failed to create logs directory:", err.message);
+    }
+
     transports.push(
       // All logs file
       new winston.transports.File({
@@ -149,35 +158,31 @@ const createLogger = (serviceName = "app", logLevel = "info") => {
   });
 
   // Handle uncaught exceptions and unhandled rejections
-  // Only write to file in non-serverless environments
+  // Always include console transport so errors are visible in container logs
+  const exceptionTransports = [
+    new winston.transports.Console({ format: consoleFormat }),
+  ];
+  const rejectionTransports = [
+    new winston.transports.Console({ format: consoleFormat }),
+  ];
+
   if (!isServerless) {
-    logger.exceptions.handle(
+    exceptionTransports.push(
       new winston.transports.File({
         filename: path.join(logsDir, `${serviceName}-exceptions.log`),
         format: fileFormat,
       }),
     );
-
-    logger.rejections.handle(
+    rejectionTransports.push(
       new winston.transports.File({
         filename: path.join(logsDir, `${serviceName}-rejections.log`),
         format: fileFormat,
       }),
     );
-  } else {
-    // In serverless, just use console for exceptions and rejections
-    logger.exceptions.handle(
-      new winston.transports.Console({
-        format: consoleFormat,
-      }),
-    );
-
-    logger.rejections.handle(
-      new winston.transports.Console({
-        format: consoleFormat,
-      }),
-    );
   }
+
+  logger.exceptions.handle(...exceptionTransports);
+  logger.rejections.handle(...rejectionTransports);
 
   // Add custom methods for better developer experience
   logger.request = (req, message = "", meta = {}) => {
