@@ -20,12 +20,17 @@
   "scripts": {
     "dev": "nodemon",
     "start": "node server.js",
+    "build": "prisma generate --schema=./shared/prisma/schema.prisma",
+    "postinstall": "prisma generate --schema=./shared/prisma/schema.prisma || echo 'Prisma generate deferred to build step'",
     "generate": "dotenv -e ../../.env -- prisma generate --schema=./shared/prisma/schema.prisma",
     "db:push": "dotenv -e ../../.env -- prisma db push --schema=./shared/prisma/schema.prisma",
     "db:migrate": "dotenv -e ../../.env -- prisma migrate dev --schema=./shared/prisma/schema.prisma",
     "db:studio": "dotenv -e ../../.env -- prisma studio --schema=./shared/prisma/schema.prisma",
     "db:reset": "dotenv -e ../../.env -- prisma migrate reset --schema=./shared/prisma/schema.prisma --force",
     "db:seed": "node lib/seed.js"
+  },
+  "prisma": {
+    "schema": "./shared/prisma/schema.prisma"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",
