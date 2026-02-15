@@ -1,6 +1,6 @@
 // backend/auth-service/controllers/registrationOtpController.js
 const registrationOtpService = require("../services/registrationOtpService");
-const { createSuccessResponse, createErrorResponse } = require("../shared/utils/response");
+const { createSuccessResponse, createErrorResponse } = require("../lib/utils");
 const { createLogger } = require("../shared/utils/logger");
 
 const logger = createLogger("registration-otp-controller");
@@ -13,14 +13,10 @@ const initiateSignup = async (req, res) => {
     try {
         const result = await registrationOtpService.initiateRegistration(req.body);
 
-        return res.status(201).json(
-            createSuccessResponse(result, "Verification code sent successfully.")
-        );
+        return createSuccessResponse(res, result, "Verification code sent successfully.", 201);
     } catch (error) {
         logger.error("Initiate signup failed", { error: error.message });
-        return res.status(error.statusCode || 500).json(
-            createErrorResponse(error)
-        );
+        return createErrorResponse(res, error, "initiateSignup");
     }
 };
 
@@ -32,14 +28,10 @@ const verifyOtp = async (req, res) => {
     try {
         const result = await registrationOtpService.verifyRegistrationOtp(req.body);
 
-        return res.status(200).json(
-            createSuccessResponse(result, "Verification successful.")
-        );
+        return createSuccessResponse(res, result, "Verification successful.", 200);
     } catch (error) {
         logger.error("Verify OTP failed", { error: error.message });
-        return res.status(error.statusCode || 500).json(
-            createErrorResponse(error)
-        );
+        return createErrorResponse(res, error, "verifyOtp");
     }
 };
 
@@ -51,14 +43,10 @@ const completeSignup = async (req, res) => {
     try {
         const result = await registrationOtpService.completeRegistration(req.body);
 
-        return res.status(201).json(
-            createSuccessResponse(result, result.message)
-        );
+        return createSuccessResponse(res, result, result.message, 201);
     } catch (error) {
         logger.error("Complete signup failed", { error: error.message });
-        return res.status(error.statusCode || 500).json(
-            createErrorResponse(error)
-        );
+        return createErrorResponse(res, error, "completeSignup");
     }
 };
 
@@ -70,14 +58,10 @@ const resendOtp = async (req, res) => {
     try {
         const result = await registrationOtpService.resendOtp(req.body);
 
-        return res.status(200).json(
-            createSuccessResponse(result, "Verification code resent successfully.")
-        );
+        return createSuccessResponse(res, result, "Verification code resent successfully.", 200);
     } catch (error) {
         logger.error("Resend OTP failed", { error: error.message });
-        return res.status(error.statusCode || 500).json(
-            createErrorResponse(error)
-        );
+        return createErrorResponse(res, error, "resendOtp");
     }
 };
 

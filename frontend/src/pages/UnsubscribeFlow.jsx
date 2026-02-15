@@ -106,8 +106,8 @@ const UnsubscribeFlow = () => {
       setVerificationToken(response.data.token);
       setStudentData(response.data.student);
       setPreferences({
-        optedOutEmail: response.data.student.optedOutEmail || true,
-        optedOutSms: response.data.student.optedOutSms || true,
+        optedOutEmail: response.data.student.optedOutEmail ?? false,
+        optedOutSms: response.data.student.optedOutSms ?? false,
       });
       setStep(STEPS.CONFIRM);
     } catch (err) {
