@@ -1,5 +1,5 @@
 // backend/auth-service/services/registrationOtpService.js
-const { v4: uuidv4 } = require("uuid");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
 const studentRepository = require("../repositories/studentRepository");
 const signupRepository = require("../repositories/signupRepository");
@@ -53,7 +53,7 @@ setInterval(() => {
  * @returns {string} UUID v4 token
  */
 const generateRegistrationToken = () => {
-    return uuidv4();
+    return crypto.randomUUID();
 };
 
 /**
