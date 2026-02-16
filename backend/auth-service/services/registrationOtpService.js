@@ -365,6 +365,10 @@ const completeRegistration = async (data) => {
                     "DUPLICATE_SIGNUP"
                 );
             }
+            // Update name if provided and student doesn't have one yet
+            if (name && !student.name) {
+                student = await studentRepository.updateStudent(student.id, { name });
+            }
             logger.info("Existing student signing up for new class", { studentId: student.id });
         }
 
