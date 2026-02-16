@@ -51,7 +51,30 @@ const confirmUnsubscribe = async (req, res) => {
     }
 };
 
+/**
+ * Initiate opt-out flow - send OTP and return registrations
+ * POST /api/students/unsubscribe/initiate
+ */
+const initiateOptOut = async (req, res) => {
+    try {
+        const { destination } = req.body;
+
+        logger.info("Opt-out initiation attempt", {
+            destination: destination?.substring(0, 3) + "***"
+        });
+
+        const result = await unsubscribeService.initiateOptOut({ destination });
+
+        logger.info("Opt-out OTP sent successfully");
+        return createSuccessResponse(res, result, "Verification code sent successfully.", 200);
+    } catch (error) {
+        logger.error("Opt-out initiation failed", { error: error.message });
+        return createErrorResponse(res, error, "initiateOptOut");
+    }
+};
+
 module.exports = {
     verifyOtp,
     confirmUnsubscribe,
+    initiateOptOut,
 };

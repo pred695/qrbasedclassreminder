@@ -37,6 +37,16 @@ const confirmUnsubscribeSchema = z
         }
     );
 
+// Initiate opt-out schema - used to send OTP on demand
+const initiateOptOutSchema = z
+    .object({
+        destination: z
+            .string()
+            .min(1, "Email or phone is required")
+            .trim(),
+    })
+    .strict();
+
 // ============================================
 // Exports
 // ============================================
@@ -45,4 +55,5 @@ module.exports = {
     otpSchema,
     verifyOtpSchema,
     confirmUnsubscribeSchema,
+    initiateOptOutSchema,
 };
