@@ -23,6 +23,10 @@ const otpVerifyLimiter = rateLimit({
 // Public Unsubscribe Routes (No Authentication)
 // ============================================
 
+// Initiate opt-out (send OTP on demand)
+// POST /api/students/unsubscribe/initiate
+router.post("/initiate", otpVerifyLimiter, unsubscribeController.initiateOptOut);
+
 // Verify OTP
 // POST /api/students/unsubscribe/verify
 router.post("/verify", otpVerifyLimiter, unsubscribeController.verifyOtp);

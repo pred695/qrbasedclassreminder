@@ -1,6 +1,17 @@
 import apiClient from './api';
 
 /**
+ * Initiate opt-out flow - send OTP and get registrations
+ * @param {string} destination - Email or phone number
+ * @returns {Promise<Object>} Response with registrations and OTP delivery info
+ */
+export const initiateOptOut = async (destination) => {
+  return await apiClient.post('/api/students/unsubscribe/initiate', {
+    destination,
+  });
+};
+
+/**
  * Verify OTP for unsubscribe flow
  * @param {string} destination - Email or phone number
  * @param {string} otp - 6-digit OTP code

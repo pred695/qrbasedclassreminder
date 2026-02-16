@@ -1,7 +1,14 @@
 // backend/auth-service/services/unsubscribeService.js
 const jwt = require("jsonwebtoken");
 const studentRepository = require("../repositories/studentRepository");
-const { verifyOtpSchema, confirmUnsubscribeSchema } = require("../models/unsubscribeSchema");
+const signupRepository = require("../repositories/signupRepository");
+const emailService = require("./emailService");
+const smsService = require("./smsService");
+const { verifyOtpSchema, confirmUnsubscribeSchema, initiateOptOutSchema } = require("../models/unsubscribeSchema");
+const {
+    generateRegistrationOtpEmailHtml,
+    generateRegistrationOtpEmailText,
+} = require("../templates/registrationOtpTemplates");
 const {
     ValidationError,
     AuthenticationError,
@@ -235,8 +242,103 @@ const confirmUnsubscribe = async (data) => {
     }
 };
 
+/**
+ * Initiate opt-out flow - find student, generate OTP, send it, return registrations
+ * @param {Object} data - { destination }
+ * @returns {Promise<Object>} Student info, registrations, and OTP delivery status
+ */
+const initiateOptOut = async (data) => {
+    try {
+        const validatedData = initiateOptOutSchema.parse(data);
+        const { destination } = validatedData;
+
+        // Check rate limiting
+        const attempts = getAttempts(destination);
+        if (attempts.blocked) {
+            throw ValidationError(
+                "Too many attempts. Please try again later.",
+                "TOO_MANY_ATTEMPTS"
+            );
+        }
+
+        // Find student
+        const student = await studentRepository.findByDestinationWithOtp(destination);
+
+        if (!student) {
+            throw NotFoundError(
+                "No account found with this email or phone number.",
+                "STUDENT_NOT_FOUND"
+            );
+        }
+
+        // Get student's registrations
+        const signups = await signupRepository.findByStudentId(student.id);
+
+        // Generate and store OTP
+        const otp = generateOtp();
+        await studentRepository.updateOptOutOtp(student.id, otp);
+
+        // Determine channel and send OTP
+        const isEmail = destination.includes("@");
+        const expiresInMinutes = 10;
+
+        let sendResult;
+        if (isEmail) {
+            const html = generateRegistrationOtpEmailHtml({ otp, expiresInMinutes });
+            const text = generateRegistrationOtpEmailText({ otp, expiresInMinutes });
+            sendResult = await emailService.sendEmail({
+                to: destination,
+                subject: "Verify Your Identity - Training Portal",
+                body: text,
+                html,
+            });
+        } else {
+            const body = `Your Training Portal verification code is: ${otp}\n\nThis code expires in ${expiresInMinutes} minutes. Do not share this code.`;
+            sendResult = await smsService.sendSms({
+                to: destination,
+                body,
+            });
+        }
+
+        if (!sendResult.success) {
+            throw ValidationError(
+                "Failed to send verification code. Please try again.",
+                "SEND_FAILED"
+            );
+        }
+
+        logger.info("Opt-out OTP sent", {
+            studentId: student.id,
+            channel: isEmail ? "email" : "phone",
+        });
+
+        return {
+            maskedDestination: isEmail
+                ? `${destination.charAt(0)}***@${destination.split("@")[1]}`
+                : `***-***-${destination.slice(-4)}`,
+            channel: isEmail ? "email" : "phone",
+            signups: signups.map((s) => ({
+                id: s.id,
+                classType: s.classType,
+                reminderScheduledDate: s.reminderScheduledDate,
+                status: s.status,
+                createdAt: s.createdAt,
+            })),
+            student: {
+                id: student.id,
+                optedOutEmail: student.optedOutEmail,
+                optedOutSms: student.optedOutSms,
+            },
+        };
+    } catch (error) {
+        logger.error("Initiate opt-out failed", { error: error.message });
+        throw transformError(error, "initiateOptOut");
+    }
+};
+
 module.exports = {
     generateOtp,
     verifyOtp,
     confirmUnsubscribe,
+    initiateOptOut,
 };
