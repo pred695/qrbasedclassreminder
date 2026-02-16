@@ -44,6 +44,15 @@ export const deleteSignup = async (signupId) => {
 };
 
 /**
+ * Delete a student and all their registrations (Admin only)
+ * @param {string} studentId - Student ID
+ * @returns {Promise<Object>} Delete response
+ */
+export const deleteStudent = async (studentId) => {
+  return await apiClient.delete(`/api/admin/signups/student/${studentId}`);
+};
+
+/**
  * Send reminder manually for a specific signup
  * @param {string} signupId - Signup ID
  * @returns {Promise<Object>} Send result

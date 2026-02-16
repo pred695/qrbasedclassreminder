@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import Button from '@components/shared/Button';
+import PhoneInput from '@components/shared/PhoneInput';
 import { CLASS_TYPES, CLASS_TYPE_LABELS } from '@utils/constants';
 import { createSignup } from '@services/studentService';
 import toast from 'react-hot-toast';
@@ -110,20 +111,12 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
 
                     {/* Phone */}
-                    <div className="space-y-2">
-                        <label htmlFor="phone" className="text-sm font-medium text-foreground">
-                            Phone Number
-                        </label>
-                        <input
-                            id="phone"
-                            type="tel"
-                            value={phone}
-                            onChange={(e) => setPhone(e.target.value)}
-                            placeholder="+1234567890"
-                            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                            disabled={isSubmitting}
-                        />
-                    </div>
+                    <PhoneInput
+                        label="Phone Number"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        disabled={isSubmitting}
+                    />
 
                     {/* Training Type */}
                     <div className="space-y-2">

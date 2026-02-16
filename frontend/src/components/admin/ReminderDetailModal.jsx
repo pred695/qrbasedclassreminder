@@ -4,8 +4,9 @@ import Button from '@components/shared/Button';
 import Badge from '@components/shared/Badge';
 import Input from '@components/shared/Input';
 import { formatDate, formatEmail, formatPhone, getClassTypeLabel, getStatusColor } from '@utils/formatters';
-import { Mail, Phone, Send, RotateCcw, Calendar } from 'lucide-react';
+import { Mail, Phone, Send, RotateCcw, Calendar, Trash2, UserX } from 'lucide-react';
 import useReminderStore from '@store/reminderStore';
+import { deleteSignup, deleteStudent } from '@services/adminService';
 import toast from 'react-hot-toast';
 
 const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
@@ -14,6 +15,9 @@ const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
   const [isRescheduling, setIsRescheduling] = useState(false);
   const [newDate, setNewDate] = useState('');
   const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmDeleteSignup, setConfirmDeleteSignup] = useState(false);
+  const [confirmDeleteStudent, setConfirmDeleteStudent] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { sendReminderAsync, rescheduleReminderAsync, resetReminderAsync, fetchDeliveryDetails, sendingReminders } = useReminderStore();
 
@@ -24,6 +28,8 @@ const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
       loadDeliveryDetails();
       setIsRescheduling(false);
       setConfirmReset(false);
+      setConfirmDeleteSignup(false);
+      setConfirmDeleteStudent(false);
       setNewDate('');
     }
   }, [isOpen, signup?.id]);
@@ -77,6 +83,36 @@ const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
       loadDeliveryDetails();
     } catch (error) {
       toast.error(`Failed to reset: ${error.message}`);
+    }
+  };
+
+  const handleDeleteSignup = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteSignup(signup.id);
+      toast.success('Registration deleted successfully');
+      setConfirmDeleteSignup(false);
+      onRefresh?.();
+      onClose();
+    } catch (error) {
+      toast.error(`Failed to delete: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleDeleteStudent = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteStudent(signup.student?.id);
+      toast.success('Student and all registrations deleted');
+      setConfirmDeleteStudent(false);
+      onRefresh?.();
+      onClose();
+    } catch (error) {
+      toast.error(`Failed to delete: ${error.message}`);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -203,6 +239,36 @@ const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
             </div>
           </div>
         )}
+
+        {/* Delete Signup Confirmation */}
+        {confirmDeleteSignup && (
+          <div className="rounded-md border border-red-200 bg-red-50 p-4">
+            <p className="mb-2 text-sm font-medium text-red-800">Delete this registration?</p>
+            <p className="mb-3 text-sm text-red-700">This will permanently delete this signup and all its delivery logs. This cannot be undone.</p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="destructive" onClick={handleDeleteSignup} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Yes, Delete Registration'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteSignup(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Student Confirmation */}
+        {confirmDeleteStudent && (
+          <div className="rounded-md border border-red-300 bg-red-50 p-4">
+            <p className="mb-2 text-sm font-medium text-red-800">Delete this student entirely?</p>
+            <p className="mb-3 text-sm text-red-700">
+              This will permanently delete the student ({student?.email || student?.phone}) and <strong>ALL</strong> their registrations. This cannot be undone.
+            </p>
+            <div className="flex gap-2">
+              <Button size="sm" variant="destructive" onClick={handleDeleteStudent} disabled={isDeleting}>
+                {isDeleting ? 'Deleting...' : 'Yes, Delete Student'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteStudent(false)}>Cancel</Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <ModalFooter>
@@ -234,6 +300,18 @@ const ReminderDetailModal = ({ isOpen, onClose, signup, onRefresh }) => {
           <Button variant="outline" onClick={() => setConfirmReset(true)}>
             <RotateCcw className="mr-1 h-4 w-4" />
             Reset
+          </Button>
+        )}
+        {!confirmDeleteSignup && !confirmDeleteStudent && (
+          <Button variant="outline" onClick={() => setConfirmDeleteSignup(true)} className="text-destructive border-destructive/50 hover:bg-destructive/10">
+            <Trash2 className="mr-1 h-4 w-4" />
+            Delete Registration
+          </Button>
+        )}
+        {!confirmDeleteStudent && !confirmDeleteSignup && signup?.student?.id && (
+          <Button variant="outline" onClick={() => setConfirmDeleteStudent(true)} className="text-destructive border-destructive/50 hover:bg-destructive/10">
+            <UserX className="mr-1 h-4 w-4" />
+            Delete Student
           </Button>
         )}
         <Button variant="ghost" onClick={onClose}>Close</Button>

@@ -203,7 +203,7 @@ model MessageTemplate {
   channel      MessageChannel
   subject      String?
   body         String         @db.Text
-  scheduleLink String
+  scheduleLink String?
   variables    Json?
   updatedAt    DateTime       @updatedAt
 

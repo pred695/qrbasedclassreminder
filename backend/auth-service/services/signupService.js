@@ -1,5 +1,6 @@
 // backend/auth-service/services/signupService.js
 const signupRepository = require("../repositories/signupRepository");
+const studentRepository = require("../repositories/studentRepository");
 const { transformError, NotFoundError } = require("../shared/utils/errors");
 const { createLogger } = require("../shared/utils/logger");
 
@@ -105,10 +106,33 @@ const getSignupById = async (signupId) => {
     }
 };
 
+/**
+ * Delete a student and all their signups (admin)
+ * @param {string} studentId - Student UUID
+ * @returns {Promise<Object>} Delete result
+ */
+const deleteStudent = async (studentId) => {
+    try {
+        const student = await studentRepository.findById(studentId);
+        if (!student) {
+            throw NotFoundError("Student not found", "STUDENT_NOT_FOUND");
+        }
+
+        await studentRepository.deleteStudent(studentId);
+
+        logger.info("Student deleted with all signups", { studentId });
+        return { message: "Student and all associated registrations deleted successfully" };
+    } catch (error) {
+        logger.error("Delete student failed", { error: error.message, studentId });
+        throw transformError(error, "deleteStudent");
+    }
+};
+
 module.exports = {
     getAllSignups,
     getSignupStats,
     updateSignup,
     deleteSignup,
+    deleteStudent,
     getSignupById,
 };

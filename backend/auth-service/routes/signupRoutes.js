@@ -16,6 +16,9 @@ router.get("/stats", signupController.getStats); // authenticateAdmin removed te
 // List all signups with filters/pagination
 router.get("/", signupController.getAllSignups); // authenticateAdmin removed temporarily
 
+// Delete student and all their registrations (before :signupId to avoid conflict)
+router.delete("/student/:studentId", signupController.deleteStudent); // authenticateAdmin removed temporarily
+
 // Get specific signup by ID
 router.get("/:signupId", signupController.getSignupById); // authenticateAdmin removed temporarily
 

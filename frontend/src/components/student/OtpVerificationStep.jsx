@@ -16,6 +16,7 @@ const OtpVerificationStep = ({
   isVerifying,
   isResending,
   error,
+  verifiedChannels = [],
 }) => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [timeLeft, setTimeLeft] = useState(0);
@@ -44,12 +45,13 @@ const OtpVerificationStep = ({
     return () => clearInterval(interval);
   }, [expiresAt]);
 
-  // Focus first input on mount
+  // Focus first input on mount and reset OTP when channel changes
   useEffect(() => {
+    setOtp(['', '', '', '', '', '']);
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus();
     }
-  }, []);
+  }, [verificationChannel]);
 
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -118,9 +120,25 @@ const OtpVerificationStep = ({
 
   return (
     <div className="space-y-6">
+      {/* Verification Progress */}
+      {verifiedChannels.length > 0 && (
+        <div className="flex items-center justify-center gap-3 text-sm">
+          <span className="flex items-center gap-1 text-green-600">
+            <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+            {verifiedChannels[0] === 'email' ? 'Email' : 'Phone'} verified
+          </span>
+          <span className="text-muted-foreground">|</span>
+          <span className="text-primary font-medium">
+            Now verify {verificationChannel === 'email' ? 'Email' : 'Phone'}
+          </span>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center">
-        <h2 className="text-xl font-semibold text-foreground">Enter Verification Code</h2>
+        <h2 className="text-xl font-semibold text-foreground">
+          {verifiedChannels.length > 0 ? 'Verify Second Contact' : 'Enter Verification Code'}
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
           We sent a 6-digit code to{' '}
           <span className="font-medium text-foreground">{maskedDestination}</span>

@@ -32,6 +32,7 @@ const useStudentStore = create((set, get) => ({
   otpError: null,
   isVerifyingOtp: false,
   isResendingOtp: false,
+  verifiedChannels: [], // tracks which channels have been verified
 
   // Actions
   setSelectedClassType: (classType) => {
@@ -106,7 +107,7 @@ const useStudentStore = create((set, get) => ({
   },
 
   /**
-   * Start OTP flow - determine if channel selection is needed
+   * Start OTP flow - when both email and phone provided, verify both sequentially
    */
   startOtpFlow: () => {
     const { formData } = get();
@@ -114,12 +115,13 @@ const useStudentStore = create((set, get) => ({
     const hasPhone = formData.phone && formData.phone.trim() !== '';
 
     if (hasEmail && hasPhone) {
-      // Both provided - show channel selector
-      set({ otpStep: 'selecting', verificationChannel: 'email' }); // Default to email
+      // Both provided - start with email verification (phone will follow automatically)
+      set({ verificationChannel: 'email', verifiedChannels: [] });
+      get().initiateOtpSignup('email');
     } else {
       // Only one provided - auto-select and initiate
       const channel = hasEmail ? 'email' : 'phone';
-      set({ verificationChannel: channel });
+      set({ verificationChannel: channel, verifiedChannels: [] });
       get().initiateOtpSignup(channel);
     }
   },
@@ -172,7 +174,7 @@ const useStudentStore = create((set, get) => ({
   },
 
   /**
-   * Verify OTP code
+   * Verify OTP code - handles multi-channel verification
    */
   verifyOtpCode: async (otp) => {
     const { registrationToken } = get();
@@ -182,14 +184,30 @@ const useStudentStore = create((set, get) => ({
     try {
       const result = await verifyOtp(registrationToken, otp);
 
-      set({
-        isVerifyingOtp: false,
-        otpStep: 'verified',
-        verificationToken: result.data.verificationToken,
-      });
+      if (result.data.verified) {
+        // All channels verified - complete registration
+        set({
+          isVerifyingOtp: false,
+          otpStep: 'verified',
+          verificationToken: result.data.verificationToken,
+        });
 
-      // Auto-complete registration
-      return await get().completeOtpSignup();
+        // Auto-complete registration
+        return await get().completeOtpSignup();
+      } else {
+        // More verification needed (second channel)
+        set({
+          isVerifyingOtp: false,
+          otpStep: 'sent', // Stay on OTP input for next channel
+          verificationChannel: result.data.nextChannel,
+          maskedDestination: result.data.maskedDestination,
+          otpExpiresAt: result.data.expiresAt,
+          verifiedChannels: [...(get().verifiedChannels || []), result.data.channelVerified],
+          otpError: null,
+        });
+
+        return 'next_channel';
+      }
     } catch (error) {
       console.error('Verify OTP error:', error);
 
@@ -310,6 +328,7 @@ const useStudentStore = create((set, get) => ({
       otpError: null,
       isVerifyingOtp: false,
       isResendingOtp: false,
+      verifiedChannels: [],
     });
   },
 
@@ -333,6 +352,7 @@ const useStudentStore = create((set, get) => ({
       otpError: null,
       isVerifyingOtp: false,
       isResendingOtp: false,
+      verifiedChannels: [],
     });
   },
 }));
