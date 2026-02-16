@@ -52,6 +52,7 @@ const SIGNUP_FIELDS = {
         student: {
             select: {
                 id: true,
+                name: true,
                 email: true,
                 phone: true,
                 optedOutEmail: true,
