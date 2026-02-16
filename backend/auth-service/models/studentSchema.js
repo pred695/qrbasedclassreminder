@@ -53,7 +53,7 @@ const createStudentSchema = z
     .object({
         email: emailSchema.nullish(), // Accept null, undefined, or valid string
         phone: phoneSchema.nullish(), // Accept null, undefined, or valid string
-        name: z.string().max(255).optional(),
+        name: z.string().min(1, "Name is required").max(255),
         reminderPreference: reminderPreferenceSchema.optional().default('BOTH'),
         optedOutEmail: z.boolean().optional().default(false),
         optedOutSms: z.boolean().optional().default(false),
@@ -95,7 +95,7 @@ const createSignupSchema = z
     .object({
         email: emailSchema.nullish(), // Accept null, undefined, or valid string
         phone: phoneSchema.nullish(), // Accept null, undefined, or valid string
-        name: z.string().max(255).optional(),
+        name: z.string().min(1, "Name is required").max(255),
         classType: classTypeSchema,
     })
     .strict()

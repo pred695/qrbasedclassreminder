@@ -60,6 +60,8 @@ const SignupForm = ({
         placeholder="John Doe"
         value={formData.name}
         onChange={(e) => onFormChange('name', e.target.value)}
+        error={errors.name}
+        required
         disabled={isSubmitting}
         autoComplete="name"
       />

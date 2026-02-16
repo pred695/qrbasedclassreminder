@@ -105,9 +105,7 @@ const SignupsTable = ({
                   <div className="space-y-1">
                     {/* Student Name */}
                     <div className="font-medium text-foreground">
-                      {signup.student?.name ||
-                        (signup.student?.email ? signup.student.email.split('@')[0] :
-                          signup.student?.phone || 'Unknown')}
+                      {signup.student?.name || 'Unknown'}
                     </div>
                     {/* Contact Info */}
                     <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">

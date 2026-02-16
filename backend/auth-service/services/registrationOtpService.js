@@ -348,7 +348,7 @@ const completeRegistration = async (data) => {
         if (!student) {
             // Create new student
             student = await studentRepository.createStudent({
-                ...(name && { name }),
+                name,
                 email,
                 phone,
                 optedOutEmail: false,
@@ -364,6 +364,10 @@ const completeRegistration = async (data) => {
                     "You have already registered for this training class.",
                     "DUPLICATE_SIGNUP"
                 );
+            }
+            // Update name if provided and student doesn't have one yet
+            if (name && !student.name) {
+                student = await studentRepository.updateStudent(student.id, { name });
             }
             logger.info("Existing student signing up for new class", { studentId: student.id });
         }
