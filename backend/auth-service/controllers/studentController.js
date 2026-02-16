@@ -15,11 +15,11 @@ const logger = createLogger("student-controller");
  */
 const createSignup = async (req, res) => {
     try {
-        const { email, phone, classType } = req.body;
+        const { email, phone, classType, name } = req.body;
 
         logger.info("Student signup attempt", { email, phone, classType });
 
-        const result = await studentService.createSignup({ email, phone, classType });
+        const result = await studentService.createSignup({ email, phone, classType, name });
 
         logger.info("Student signup successful", { signupId: result.signup.id });
         return createSuccessResponse(res, result, result.message, 201);

@@ -28,6 +28,14 @@ const ConfirmationScreen = ({ classType, formData, onConfirm, onEdit, isSubmitti
             </p>
           </div>
 
+          {/* Name */}
+          {formData.name && (
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium text-muted-foreground">Name</p>
+              <p className="mt-1 font-medium text-foreground">{formData.name}</p>
+            </div>
+          )}
+
           {/* Contact Information */}
           <div className="border-t pt-4">
             <p className="text-sm font-medium text-muted-foreground">Contact Information</p>

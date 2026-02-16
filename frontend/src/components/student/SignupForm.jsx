@@ -52,6 +52,18 @@ const SignupForm = ({
         </button>
       </div>
 
+      {/* Name Input */}
+      <Input
+        type="text"
+        name="name"
+        label="Your Name"
+        placeholder="John Doe"
+        value={formData.name}
+        onChange={(e) => onFormChange('name', e.target.value)}
+        disabled={isSubmitting}
+        autoComplete="name"
+      />
+
       {/* Contact Method Toggle */}
       <div className="space-y-3">
         <label className="block text-sm font-medium text-foreground">

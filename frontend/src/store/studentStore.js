@@ -12,6 +12,7 @@ const useStudentStore = create((set, get) => ({
   // State
   selectedClassType: null,
   formData: {
+    name: '',
     email: '',
     phone: '',
   },
@@ -137,6 +138,7 @@ const useStudentStore = create((set, get) => ({
 
     try {
       const result = await initiateSignup({
+        name: formData.name || null,
         email: formData.email || null,
         phone: formData.phone || null,
         classType: selectedClassType,
@@ -309,6 +311,7 @@ const useStudentStore = create((set, get) => ({
     set({
       selectedClassType: null,
       formData: {
+        name: '',
         email: '',
         phone: '',
       },

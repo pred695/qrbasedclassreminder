@@ -117,7 +117,7 @@ const sendOtp = async (destination, channel, otp) => {
 const initiateRegistration = async (data) => {
     try {
         const validatedData = initiateRegistrationSchema.parse(data);
-        const { email, phone, classType, verificationChannel } = validatedData;
+        const { name, email, phone, classType, verificationChannel } = validatedData;
 
         const destination = verificationChannel === "email" ? email : phone;
 
@@ -135,6 +135,7 @@ const initiateRegistration = async (data) => {
 
         // Store pending registration
         pendingRegistrations.set(registrationToken, {
+            name: name || null,
             email: email || null,
             phone: phone || null,
             classType,
@@ -280,6 +281,7 @@ const verifyRegistrationOtp = async (data) => {
         const verificationToken = jwt.sign(
             {
                 registrationToken,
+                name: registration.name,
                 email: registration.email,
                 phone: registration.phone,
                 classType: registration.classType,
@@ -335,7 +337,7 @@ const completeRegistration = async (data) => {
             throw ValidationError("Invalid token purpose", "INVALID_TOKEN");
         }
 
-        const { registrationToken, email, phone, classType } = decoded;
+        const { registrationToken, name, email, phone, classType } = decoded;
 
         // Clean up pending registration
         pendingRegistrations.delete(registrationToken);
@@ -346,6 +348,7 @@ const completeRegistration = async (data) => {
         if (!student) {
             // Create new student
             student = await studentRepository.createStudent({
+                ...(name && { name }),
                 email,
                 phone,
                 optedOutEmail: false,
