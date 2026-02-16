@@ -66,6 +66,11 @@ const useStudentStore = create((set, get) => ({
       errors.classType = 'Please select a training type';
     }
 
+    // Validate name
+    if (!formData.name || formData.name.trim() === '') {
+      errors.name = 'Name is required';
+    }
+
     // Validate contact info - require at least one
     const hasEmail = formData.email && formData.email.trim() !== '';
     const hasPhone = formData.phone && formData.phone.trim() !== '';

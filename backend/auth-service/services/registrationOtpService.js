@@ -348,7 +348,7 @@ const completeRegistration = async (data) => {
         if (!student) {
             // Create new student
             student = await studentRepository.createStudent({
-                ...(name && { name }),
+                name,
                 email,
                 phone,
                 optedOutEmail: false,

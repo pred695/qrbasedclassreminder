@@ -16,7 +16,7 @@ const verificationChannelSchema = z.enum(["email", "phone"], {
 // Initiate registration schema
 const initiateRegistrationSchema = z
     .object({
-        name: z.string().max(255).nullish(),
+        name: z.string().min(1, "Name is required").max(255),
         email: emailSchema.nullish(),
         phone: phoneSchema.nullish(),
         classType: classTypeSchema,

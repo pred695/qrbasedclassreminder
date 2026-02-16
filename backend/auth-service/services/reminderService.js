@@ -74,8 +74,7 @@ const sendReminder = async (signupId) => {
         const classTypeName = CLASS_TYPE_LABELS[signup.classType] || signup.classType;
         const appUrl = process.env.APP_BASE_URL || "https://yourapp.com";
 
-        // Get student name - fallback to email prefix or generic greeting
-        const studentName = student.name || (student.email ? student.email.split('@')[0] : null);
+        const studentName = student.name || null;
 
         // Generate and store OTP for unsubscribe verification
         const otpCode = generateOtp();

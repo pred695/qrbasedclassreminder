@@ -16,6 +16,11 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        if (!name || !name.trim()) {
+            toast.error('Please enter the student name');
+            return;
+        }
+
         if (!email && !phone) {
             toast.error('Please enter at least email or phone');
             return;
@@ -30,7 +35,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
         try {
             const signupData = {
                 classType,
-                ...(name && { name: name.trim() }),
+                name: name.trim(),
                 ...(email && { email }),
                 ...(phone && { phone }),
             };
@@ -81,7 +86,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
                     {/* Name */}
                     <div className="space-y-2">
                         <label htmlFor="name" className="text-sm font-medium text-foreground">
-                            Student Name
+                            Student Name *
                         </label>
                         <input
                             id="name"
@@ -91,6 +96,7 @@ const AddStudentModal = ({ isOpen, onClose, onSuccess }) => {
                             placeholder="John Doe"
                             className="w-full rounded-lg border border-input bg-background px-3 py-2 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                             disabled={isSubmitting}
+                            required
                         />
                     </div>
 
