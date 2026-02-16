@@ -299,6 +299,15 @@ const completeRegistration = async (data) => {
             });
             logger.info("Student created via OTP verification", { studentId: student.id });
         } else {
+            // Check if student already has a signup for this exact class type
+            const existingSignups = await signupRepository.findByStudentId(student.id);
+            const duplicateSignup = existingSignups.find(s => s.classType === classType);
+            if (duplicateSignup) {
+                throw ConflictError(
+                    "You have already registered for this training class.",
+                    "DUPLICATE_SIGNUP"
+                );
+            }
             logger.info("Existing student signing up for new class", { studentId: student.id });
         }
 
