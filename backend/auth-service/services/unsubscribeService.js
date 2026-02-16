@@ -169,13 +169,14 @@ const verifyOtp = async (data) => {
 
 /**
  * Confirm unsubscribe after OTP verification
- * @param {Object} data - { token, optedOutEmail?, optedOutSms? }
+ * Supports both global (legacy) and per-signup preferences
+ * @param {Object} data - { token, optedOutEmail?, optedOutSms?, signupPreferences? }
  * @returns {Promise<Object>} Confirmation result
  */
 const confirmUnsubscribe = async (data) => {
     try {
         const validatedData = confirmUnsubscribeSchema.parse(data);
-        const { token, optedOutEmail, optedOutSms } = validatedData;
+        const { token, optedOutEmail, optedOutSms, signupPreferences } = validatedData;
 
         // Verify the token
         let decoded;
@@ -207,34 +208,45 @@ const confirmUnsubscribe = async (data) => {
             throw NotFoundError("Student not found", "STUDENT_NOT_FOUND");
         }
 
-        // Build update data
-        const updateData = {};
-        if (optedOutEmail !== undefined) {
-            updateData.optedOutEmail = optedOutEmail;
-        }
-        if (optedOutSms !== undefined) {
-            updateData.optedOutSms = optedOutSms;
+        // Per-signup preferences (new flow)
+        if (signupPreferences && signupPreferences.length > 0) {
+            // Verify all signups belong to this student
+            const studentSignups = await signupRepository.findByStudentId(studentId);
+            const studentSignupIds = new Set(studentSignups.map((s) => s.id));
+
+            for (const pref of signupPreferences) {
+                if (!studentSignupIds.has(pref.signupId)) {
+                    throw ValidationError(
+                        "Invalid signup ID in preferences.",
+                        "INVALID_SIGNUP_ID"
+                    );
+                }
+            }
+
+            await signupRepository.updateSignupOptOutBatch(signupPreferences);
+
+            logger.info("Per-signup preferences updated", {
+                studentId,
+                signupCount: signupPreferences.length,
+            });
         }
 
-        // Update opt-out preferences
-        await studentRepository.updateOptOutStatus(studentId, updateData);
+        // Global preferences (legacy flow - also update student-level)
+        if (optedOutEmail !== undefined || optedOutSms !== undefined) {
+            const updateData = {};
+            if (optedOutEmail !== undefined) updateData.optedOutEmail = optedOutEmail;
+            if (optedOutSms !== undefined) updateData.optedOutSms = optedOutSms;
+            await studentRepository.updateOptOutStatus(studentId, updateData);
+        }
 
         // Clear the OTP
         await studentRepository.clearOptOutOtp(studentId);
 
-        logger.info("Unsubscribe confirmed", {
-            studentId,
-            optedOutEmail,
-            optedOutSms,
-        });
+        logger.info("Unsubscribe confirmed", { studentId });
 
         return {
             success: true,
             message: "Your preferences have been updated successfully.",
-            preferences: {
-                optedOutEmail: optedOutEmail ?? student.optedOutEmail,
-                optedOutSms: optedOutSms ?? student.optedOutSms,
-            },
         };
     } catch (error) {
         logger.error("Confirm unsubscribe error", { error: error.message });
@@ -322,6 +334,8 @@ const initiateOptOut = async (data) => {
                 classType: s.classType,
                 reminderScheduledDate: s.reminderScheduledDate,
                 status: s.status,
+                optedOutEmail: s.optedOutEmail,
+                optedOutSms: s.optedOutSms,
                 createdAt: s.createdAt,
             })),
             student: {

@@ -30,13 +30,10 @@ const MyRegistrations = () => {
   const [destination, setDestination] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [verificationToken, setVerificationToken] = useState(null);
-  const [studentData, setStudentData] = useState(null);
   const [signups, setSignups] = useState([]);
+  // Per-signup preferences: { [signupId]: { optedOutEmail, optedOutSms } }
+  const [signupPrefs, setSignupPrefs] = useState({});
   const [maskedDestination, setMaskedDestination] = useState('');
-  const [preferences, setPreferences] = useState({
-    optedOutEmail: false,
-    optedOutSms: false,
-  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -61,13 +58,20 @@ const MyRegistrations = () => {
 
     try {
       const response = await initiateOptOut(destination);
-      setSignups(response.data.signups || []);
+      const responseSignups = response.data.signups || [];
+      setSignups(responseSignups);
       setMaskedDestination(response.data.maskedDestination);
-      setStudentData(response.data.student);
-      setPreferences({
-        optedOutEmail: response.data.student?.optedOutEmail ?? false,
-        optedOutSms: response.data.student?.optedOutSms ?? false,
+
+      // Initialize per-signup preferences from current values
+      const prefs = {};
+      responseSignups.forEach((s) => {
+        prefs[s.id] = {
+          optedOutEmail: s.optedOutEmail ?? false,
+          optedOutSms: s.optedOutSms ?? false,
+        };
       });
+      setSignupPrefs(prefs);
+
       setStep(STEPS.OTP);
     } catch (err) {
       setError(err.message || 'Failed to find your registrations. Please check your details.');
@@ -131,6 +135,16 @@ const MyRegistrations = () => {
     }
   };
 
+  const toggleSignupPref = (signupId, field) => {
+    setSignupPrefs((prev) => ({
+      ...prev,
+      [signupId]: {
+        ...prev[signupId],
+        [field]: !prev[signupId][field],
+      },
+    }));
+  };
+
   const handleConfirmClick = () => {
     setShowConfirmModal(true);
   };
@@ -140,7 +154,14 @@ const MyRegistrations = () => {
     setError(null);
 
     try {
-      await confirmUnsubscribe(verificationToken, preferences);
+      // Build per-signup preferences array
+      const signupPreferences = signups.map((s) => ({
+        signupId: s.id,
+        optedOutEmail: signupPrefs[s.id]?.optedOutEmail ?? false,
+        optedOutSms: signupPrefs[s.id]?.optedOutSms ?? false,
+      }));
+
+      await confirmUnsubscribe(verificationToken, { signupPreferences });
       setShowConfirmModal(false);
       setStep(STEPS.SUCCESS);
     } catch (err) {
@@ -191,6 +212,21 @@ const MyRegistrations = () => {
         ))
       )}
     </div>
+  );
+
+  const ToggleSwitch = ({ enabled, onToggle }) => (
+    <button
+      onClick={onToggle}
+      className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
+        enabled ? 'bg-primary' : 'bg-gray-200'
+      }`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
+          enabled ? 'translate-x-[18px]' : 'translate-x-[3px]'
+        }`}
+      />
+    </button>
   );
 
   const renderContactStep = () => (
@@ -285,76 +321,71 @@ const MyRegistrations = () => {
         <AlertDescription>
           <div className="flex items-center gap-2">
             <Shield className="h-4 w-4" />
-            <span>Your identity has been verified. Manage your preferences below.</span>
+            <span>Your identity has been verified. Manage preferences per registration below.</span>
           </div>
         </AlertDescription>
       </Alert>
 
-      {/* Registrations List */}
-      {renderRegistrationsList()}
-
-      {/* Notification Preferences */}
-      <div className="border-t pt-6">
-        <p className="text-sm font-medium text-foreground mb-3">Notification Preferences</p>
-
-        {/* Email Preference */}
-        <div className="flex items-start justify-between rounded-lg border p-4 mb-3">
-          <div className="flex items-start gap-3">
-            <div className="rounded-md bg-blue-100 p-2">
-              <Mail className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="font-medium text-foreground">Email Reminders</p>
-              <p className="text-sm text-muted-foreground">
-                {preferences.optedOutEmail ? 'Currently disabled' : 'Currently enabled'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setPreferences((prev) => ({ ...prev, optedOutEmail: !prev.optedOutEmail }))}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              preferences.optedOutEmail ? 'bg-gray-200' : 'bg-primary'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                preferences.optedOutEmail ? 'translate-x-1' : 'translate-x-6'
-              }`}
-            />
-          </button>
+      {/* Per-signup preferences */}
+      {signups.length === 0 ? (
+        <div className="rounded-lg border border-dashed p-4 text-center">
+          <p className="text-sm text-muted-foreground">No registrations found.</p>
         </div>
+      ) : (
+        <div className="space-y-4">
+          {signups.map((signup) => {
+            const prefs = signupPrefs[signup.id] || {};
+            return (
+              <div key={signup.id} className="rounded-lg border p-4 space-y-3">
+                {/* Class info header */}
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-md bg-primary/10 p-2">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {CLASS_TYPE_LABELS[signup.classType] || signup.classType}
+                      </p>
+                      <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
+                        <Calendar className="h-3 w-3" />
+                        <span>Reminder: {formatDate(signup.reminderScheduledDate)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Badge variant={getStatusBadgeVariant(signup.status)}>
+                    {signup.status}
+                  </Badge>
+                </div>
 
-        {/* SMS Preference */}
-        <div className="flex items-start justify-between rounded-lg border p-4">
-          <div className="flex items-start gap-3">
-            <div className="rounded-md bg-green-100 p-2">
-              <Phone className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-foreground">SMS Reminders</p>
-              <p className="text-sm text-muted-foreground">
-                {preferences.optedOutSms ? 'Currently disabled' : 'Currently enabled'}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setPreferences((prev) => ({ ...prev, optedOutSms: !prev.optedOutSms }))}
-            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${
-              preferences.optedOutSms ? 'bg-gray-200' : 'bg-primary'
-            }`}
-          >
-            <span
-              className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                preferences.optedOutSms ? 'translate-x-1' : 'translate-x-6'
-              }`}
-            />
-          </button>
+                {/* Toggle row for this signup */}
+                <div className="flex items-center gap-4 pt-2 border-t">
+                  <div className="flex items-center gap-2 flex-1">
+                    <Mail className="h-4 w-4 text-blue-500" />
+                    <span className="text-xs text-muted-foreground">Email</span>
+                    <ToggleSwitch
+                      enabled={!prefs.optedOutEmail}
+                      onToggle={() => toggleSignupPref(signup.id, 'optedOutEmail')}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2 flex-1">
+                    <Phone className="h-4 w-4 text-green-500" />
+                    <span className="text-xs text-muted-foreground">SMS</span>
+                    <ToggleSwitch
+                      enabled={!prefs.optedOutSms}
+                      onToggle={() => toggleSignupPref(signup.id, 'optedOutSms')}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
+      )}
 
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          Toggle OFF (gray) to stop receiving that notification type.
-        </p>
-      </div>
+      <p className="text-xs text-muted-foreground text-center">
+        Toggle OFF (gray) to stop receiving that notification type for a specific registration.
+      </p>
 
       <Button onClick={handleConfirmClick} className="w-full" size="lg" loading={loading}>
         Save Preferences
@@ -362,53 +393,78 @@ const MyRegistrations = () => {
     </div>
   );
 
-  const renderSuccessStep = () => (
-    <div className="text-center space-y-6">
-      <div className="flex justify-center">
-        <div className="rounded-full bg-green-100 p-4">
-          <CheckCircle className="h-12 w-12 text-green-600" />
+  const renderSuccessStep = () => {
+    // Count how many registrations have all reminders disabled
+    const allDisabledCount = signups.filter((s) => {
+      const prefs = signupPrefs[s.id] || {};
+      return prefs.optedOutEmail && prefs.optedOutSms;
+    }).length;
+
+    return (
+      <div className="text-center space-y-6">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="h-12 w-12 text-green-600" />
+          </div>
         </div>
-      </div>
 
-      <div>
-        <h3 className="text-xl font-semibold text-foreground">Preferences Updated</h3>
-        <p className="mt-2 text-muted-foreground">
-          Your notification preferences have been successfully updated.
-        </p>
-      </div>
+        <div>
+          <h3 className="text-xl font-semibold text-foreground">Preferences Updated</h3>
+          <p className="mt-2 text-muted-foreground">
+            Your notification preferences have been successfully updated.
+          </p>
+        </div>
 
-      <div className="bg-muted/50 rounded-lg p-4 text-left">
-        <p className="text-sm font-medium mb-2">Your current settings:</p>
-        <ul className="text-sm text-muted-foreground space-y-1">
-          <li className="flex items-center gap-2">
-            <Mail className="h-4 w-4" />
-            Email reminders: {preferences.optedOutEmail ? 'Disabled' : 'Enabled'}
-          </li>
-          <li className="flex items-center gap-2">
-            <Phone className="h-4 w-4" />
-            SMS reminders: {preferences.optedOutSms ? 'Disabled' : 'Enabled'}
-          </li>
-        </ul>
-      </div>
+        <div className="bg-muted/50 rounded-lg p-4 text-left space-y-3">
+          <p className="text-sm font-medium">Your updated settings:</p>
+          {signups.map((signup) => {
+            const prefs = signupPrefs[signup.id] || {};
+            return (
+              <div key={signup.id} className="text-sm text-muted-foreground">
+                <p className="font-medium text-foreground text-xs">
+                  {CLASS_TYPE_LABELS[signup.classType] || signup.classType}
+                </p>
+                <div className="flex gap-4 mt-1">
+                  <span className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" />
+                    Email: {prefs.optedOutEmail ? 'Off' : 'On'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Phone className="h-3 w-3" />
+                    SMS: {prefs.optedOutSms ? 'Off' : 'On'}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
 
-      <Button
-        onClick={() => {
-          setStep(STEPS.CONTACT);
-          setDestination('');
-          setOtp(['', '', '', '', '', '']);
-          setVerificationToken(null);
-          setStudentData(null);
-          setSignups([]);
-          setError(null);
-        }}
-        variant="outline"
-        className="w-full"
-        size="lg"
-      >
-        Look Up Another Account
-      </Button>
-    </div>
-  );
+        {allDisabledCount > 0 && (
+          <p className="text-xs text-muted-foreground">
+            You have disabled all reminders for {allDisabledCount} registration(s).
+            You may miss important training renewal notices.
+          </p>
+        )}
+
+        <Button
+          onClick={() => {
+            setStep(STEPS.CONTACT);
+            setDestination('');
+            setOtp(['', '', '', '', '', '']);
+            setVerificationToken(null);
+            setSignups([]);
+            setSignupPrefs({});
+            setError(null);
+          }}
+          variant="outline"
+          className="w-full"
+          size="lg"
+        >
+          Look Up Another Account
+        </Button>
+      </div>
+    );
+  };
 
   const getStepContent = () => {
     switch (step) {
@@ -429,6 +485,31 @@ const MyRegistrations = () => {
       default: return 'My Registrations';
     }
   };
+
+  // Build modal summary of changes
+  const getChangeSummary = () => {
+    const changes = [];
+    signups.forEach((signup) => {
+      const prefs = signupPrefs[signup.id] || {};
+      const original = { optedOutEmail: signup.optedOutEmail, optedOutSms: signup.optedOutSms };
+      const label = CLASS_TYPE_LABELS[signup.classType] || signup.classType;
+
+      if (prefs.optedOutEmail !== original.optedOutEmail || prefs.optedOutSms !== original.optedOutSms) {
+        const parts = [];
+        if (prefs.optedOutEmail && !original.optedOutEmail) parts.push('Disable email');
+        if (!prefs.optedOutEmail && original.optedOutEmail) parts.push('Enable email');
+        if (prefs.optedOutSms && !original.optedOutSms) parts.push('Disable SMS');
+        if (!prefs.optedOutSms && original.optedOutSms) parts.push('Enable SMS');
+        changes.push({ label, parts });
+      }
+    });
+    return changes;
+  };
+
+  const allRemindersDisabled = signups.every((s) => {
+    const prefs = signupPrefs[s.id] || {};
+    return prefs.optedOutEmail && prefs.optedOutSms;
+  });
 
   return (
     <div className="min-h-screen bg-background px-4 py-8 sm:px-6 lg:px-8">
@@ -483,20 +564,35 @@ const MyRegistrations = () => {
         size="sm"
       >
         <div className="space-y-4">
-          <div className="bg-muted/50 rounded-lg p-4">
-            <p className="text-sm">You are about to:</p>
-            <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-              {preferences.optedOutEmail && <li>- Disable email reminders</li>}
-              {preferences.optedOutSms && <li>- Disable SMS reminders</li>}
-              {!preferences.optedOutEmail && <li>- Keep email reminders enabled</li>}
-              {!preferences.optedOutSms && <li>- Keep SMS reminders enabled</li>}
-            </ul>
-          </div>
+          {(() => {
+            const changes = getChangeSummary();
+            return changes.length > 0 ? (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm mb-2">Changes:</p>
+                <ul className="text-sm text-muted-foreground space-y-2">
+                  {changes.map((change, i) => (
+                    <li key={i}>
+                      <span className="font-medium text-foreground text-xs">{change.label}</span>
+                      <ul className="mt-1 space-y-0.5">
+                        {change.parts.map((part, j) => (
+                          <li key={j} className="text-xs">- {part}</li>
+                        ))}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <div className="bg-muted/50 rounded-lg p-4">
+                <p className="text-sm text-muted-foreground">No changes detected.</p>
+              </div>
+            );
+          })()}
 
-          {preferences.optedOutEmail && preferences.optedOutSms && (
+          {allRemindersDisabled && signups.length > 0 && (
             <Alert variant="warning">
               <AlertDescription>
-                You are disabling all reminders. You may miss important training renewal notices.
+                You are disabling all reminders for all registrations. You may miss important training renewal notices.
               </AlertDescription>
             </Alert>
           )}

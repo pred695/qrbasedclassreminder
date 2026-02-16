@@ -31,6 +31,8 @@ const SIGNUP_FIELDS = {
         reminderScheduledDate: true,
         reminderSentAt: true,
         status: true,
+        optedOutEmail: true,
+        optedOutSms: true,
         notes: true,
         createdAt: true,
         updatedAt: true,
@@ -42,6 +44,8 @@ const SIGNUP_FIELDS = {
         reminderScheduledDate: true,
         reminderSentAt: true,
         status: true,
+        optedOutEmail: true,
+        optedOutSms: true,
         notes: true,
         createdAt: true,
         updatedAt: true,
@@ -60,6 +64,8 @@ const SIGNUP_FIELDS = {
         classType: true,
         reminderScheduledDate: true,
         status: true,
+        optedOutEmail: true,
+        optedOutSms: true,
         createdAt: true,
     },
 };
@@ -368,6 +374,40 @@ const getSignupStats = async () => {
     }
 };
 
+/**
+ * Update opt-out preferences for multiple signups (batch)
+ * @param {Array<Object>} signupPreferences - Array of { signupId, optedOutEmail, optedOutSms }
+ * @returns {Promise<Array>} Updated signups
+ */
+const updateSignupOptOutBatch = async (signupPreferences) => {
+    try {
+        const db = await getDB();
+
+        const updates = signupPreferences.map((pref) => {
+            const validId = uuidSchema.parse(pref.signupId);
+            const updateFields = {};
+            if (pref.optedOutEmail !== undefined) updateFields.optedOutEmail = pref.optedOutEmail;
+            if (pref.optedOutSms !== undefined) updateFields.optedOutSms = pref.optedOutSms;
+
+            return db.signup.update({
+                where: { id: validId },
+                data: {
+                    ...updateFields,
+                    updatedAt: new Date(),
+                },
+                select: SIGNUP_FIELDS.public,
+            });
+        });
+
+        const results = await Promise.all(updates);
+        logger.info("Signup opt-out batch updated", { count: results.length });
+        return results;
+    } catch (error) {
+        logger.error("Failed to batch update signup opt-out", { error: error.message });
+        throw transformError(error, "updateSignupOptOutBatch");
+    }
+};
+
 module.exports = {
     createSignup,
     findById,
@@ -375,6 +415,7 @@ module.exports = {
     findPendingReminders,
     updateSignup,
     updateReminderStatus,
+    updateSignupOptOutBatch,
     findSignups,
     deleteSignup,
     getSignupStats,

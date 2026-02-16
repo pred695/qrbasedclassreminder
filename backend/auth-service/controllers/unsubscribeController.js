@@ -33,7 +33,7 @@ const verifyOtp = async (req, res) => {
  */
 const confirmUnsubscribe = async (req, res) => {
     try {
-        const { token, optedOutEmail, optedOutSms } = req.body;
+        const { token, optedOutEmail, optedOutSms, signupPreferences } = req.body;
 
         logger.info("Unsubscribe confirmation attempt");
 
@@ -41,6 +41,7 @@ const confirmUnsubscribe = async (req, res) => {
             token,
             optedOutEmail,
             optedOutSms,
+            signupPreferences,
         });
 
         logger.info("Unsubscribe confirmed successfully");
