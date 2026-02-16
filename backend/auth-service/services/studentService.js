@@ -45,7 +45,7 @@ const createSignup = async (signupData) => {
     try {
         // Validate input
         const validatedData = createSignupSchema.parse(signupData);
-        const { email, phone, classType } = validatedData;
+        const { email, phone, classType, name } = validatedData;
 
         // Check if student already exists
         let student = await studentRepository.checkExists(email, phone);
@@ -55,11 +55,21 @@ const createSignup = async (signupData) => {
             student = await studentRepository.createStudent({
                 email,
                 phone,
+                ...(name && { name }),
                 optedOutEmail: false,
                 optedOutSms: false,
             });
             logger.info("New student created during signup", { studentId: student.id });
         } else {
+            // Check for duplicate signup (same student, same class type)
+            const existingSignups = await signupRepository.findByStudentId(student.id);
+            const duplicateSignup = existingSignups.find(s => s.classType === classType);
+            if (duplicateSignup) {
+                throw ConflictError(
+                    "This student is already registered for this training class.",
+                    "DUPLICATE_SIGNUP"
+                );
+            }
             logger.info("Existing student found during signup", { studentId: student.id });
         }
 
