@@ -95,6 +95,7 @@ const createSignupSchema = z
     .object({
         email: emailSchema.nullish(), // Accept null, undefined, or valid string
         phone: phoneSchema.nullish(), // Accept null, undefined, or valid string
+        name: z.string().max(255).optional(),
         classType: classTypeSchema,
     })
     .strict()
