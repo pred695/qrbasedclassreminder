@@ -22,18 +22,30 @@ const verifyOtpSchema = z
     })
     .strict();
 
-// Confirm unsubscribe schema - used after OTP verification
+// Per-signup preference item
+const signupPreferenceSchema = z.object({
+    signupId: z.string().uuid("Invalid signup ID"),
+    optedOutEmail: z.boolean(),
+    optedOutSms: z.boolean(),
+});
+
+// Confirm unsubscribe schema - supports both global and per-signup preferences
 const confirmUnsubscribeSchema = z
     .object({
         token: z.string().min(1, "Verification token is required"),
+        // Legacy global preferences (for old UnsubscribeFlow)
         optedOutEmail: z.boolean().optional(),
         optedOutSms: z.boolean().optional(),
+        // Per-signup preferences (for MyRegistrations page)
+        signupPreferences: z.array(signupPreferenceSchema).optional(),
     })
-    .strict()
     .refine(
-        (data) => data.optedOutEmail !== undefined || data.optedOutSms !== undefined,
+        (data) =>
+            data.signupPreferences?.length > 0 ||
+            data.optedOutEmail !== undefined ||
+            data.optedOutSms !== undefined,
         {
-            message: "At least one opt-out preference must be provided",
+            message: "Either signup preferences or global opt-out preferences must be provided",
         }
     );
 
