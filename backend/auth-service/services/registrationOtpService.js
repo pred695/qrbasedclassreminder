@@ -116,23 +116,8 @@ const initiateRegistration = async (data) => {
 
         const destination = verificationChannel === "email" ? email : phone;
 
-        // Check if email/phone already registered
+        // Check if student already exists (they can still sign up for additional classes)
         const existingStudent = await studentRepository.checkExists(email, phone);
-        if (existingStudent) {
-            // Check which field matches
-            if (email && existingStudent.email === email.toLowerCase()) {
-                throw ConflictError(
-                    "This email is already registered.",
-                    "EMAIL_EXISTS"
-                );
-            }
-            if (phone && existingStudent.phone === phone) {
-                throw ConflictError(
-                    "This phone number is already registered.",
-                    "PHONE_EXISTS"
-                );
-            }
-        }
 
         // Generate registration token and OTP
         const registrationToken = generateRegistrationToken();
@@ -301,24 +286,21 @@ const completeRegistration = async (data) => {
         // Clean up pending registration
         pendingRegistrations.delete(registrationToken);
 
-        // Double-check for existing student (race condition protection)
-        const existingStudent = await studentRepository.checkExists(email, phone);
-        if (existingStudent) {
-            throw ConflictError(
-                "This email or phone number is already registered.",
-                "ALREADY_EXISTS"
-            );
+        // Check if student already exists (returning student signing up for another class)
+        let student = await studentRepository.checkExists(email, phone);
+
+        if (!student) {
+            // Create new student
+            student = await studentRepository.createStudent({
+                email,
+                phone,
+                optedOutEmail: false,
+                optedOutSms: false,
+            });
+            logger.info("Student created via OTP verification", { studentId: student.id });
+        } else {
+            logger.info("Existing student signing up for new class", { studentId: student.id });
         }
-
-        // Create student
-        const student = await studentRepository.createStudent({
-            email,
-            phone,
-            optedOutEmail: false,
-            optedOutSms: false,
-        });
-
-        logger.info("Student created via OTP verification", { studentId: student.id });
 
         // Calculate reminder date and create signup
         const reminderScheduledDate = calculateReminderDate(classType);
