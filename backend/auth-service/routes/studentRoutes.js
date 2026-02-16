@@ -7,8 +7,8 @@ const studentController = require("../controllers/studentController");
 // Public Student Routes (No Authentication)
 // ============================================
 
-// NOTE: Direct signup route removed - all signups now go through OTP verification
-// See registrationOtpRoutes.js for /api/students/signup/initiate, /verify, /complete
+// Direct signup (used by class registration page and admin add-student)
+router.post("/signup", studentController.createSignup);
 
 // Get signup confirmation
 router.get("/signup/:signupId", studentController.getSignupConfirmation);
