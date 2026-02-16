@@ -100,10 +100,29 @@ const deleteSignup = async (req, res) => {
     }
 };
 
+/**
+ * Delete student and all registrations (admin)
+ * DELETE /api/admin/signups/student/:studentId
+ */
+const deleteStudent = async (req, res) => {
+    try {
+        const { studentId } = req.params;
+
+        const result = await signupService.deleteStudent(studentId);
+
+        logger.info("Student deleted by admin", { studentId, deletedBy: req.admin?.id });
+        return createSuccessResponse(res, {}, result.message, 200);
+    } catch (error) {
+        logger.error("Delete student failed", { error: error.message });
+        return createErrorResponse(res, error, "deleteStudent");
+    }
+};
+
 module.exports = {
     getAllSignups,
     getStats,
     getSignupById,
     updateSignup,
     deleteSignup,
+    deleteStudent,
 };

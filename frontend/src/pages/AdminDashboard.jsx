@@ -116,7 +116,7 @@ const AdminDashboard = () => {
           <div className="flex items-center gap-2">
             {admin && (
               <span className="text-sm text-muted-foreground mr-2">
-                {admin.email}
+                {admin.name || admin.email}
               </span>
             )}
             <Button onClick={() => setIsAddStudentModalOpen(true)}>

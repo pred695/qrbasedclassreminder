@@ -1,12 +1,52 @@
 // backend/auth-service/templates/emailTemplates.js
 
 /**
+ * Convert plain text (with newlines) to HTML paragraphs
+ * @param {string} text - Plain text content
+ * @returns {string} HTML paragraphs
+ */
+const textToHtml = (text) => {
+    return text
+        .split('\n\n')
+        .map(paragraph => paragraph.trim())
+        .filter(Boolean)
+        .map(paragraph => `<p style="margin: 0 0 16px 0; font-size: 15px; color: #52525b; line-height: 1.6;">${paragraph.replace(/\n/g, '<br>')}</p>`)
+        .join('\n');
+};
+
+/**
  * Generate a styled HTML email template
- * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink, otpCode }
+ * @param {Object} options - { studentName, classTypeName, scheduleLink, optOutLink, otpCode, templateBody }
  * @returns {string} HTML email content
  */
-const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, optOutLink, otpCode }) => {
+const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, optOutLink, otpCode, templateBody }) => {
     const displayName = studentName || 'there';
+
+    // Use template body if provided, otherwise use default content
+    const bodyContent = templateBody
+        ? textToHtml(templateBody)
+        : `<p style="margin: 0 0 24px 0; font-size: 15px; color: #71717a; line-height: 1.5;">
+                                            This is a friendly reminder about your upcoming training.
+                                        </p>
+
+                                        <!-- Training Info Box -->
+                                        <div style="background-color: #f4f4f5; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
+                                            <p style="margin: 0 0 4px 0; font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.5px;">
+                                                Training Type
+                                            </p>
+                                            <p style="margin: 0; font-size: 16px; font-weight: 600; color: #18181b;">
+                                                ${classTypeName}
+                                            </p>
+                                        </div>
+
+                                        <p style="margin: 0 0 24px 0; font-size: 15px; color: #52525b; line-height: 1.6;">
+                                            Your certification is approaching its renewal period. Please schedule your next session at your earliest convenience.
+                                        </p>
+
+                                        <!-- CTA Button -->
+                                        <a href="${scheduleLink}" style="display: inline-block; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500; padding: 12px 24px; border-radius: 8px;">
+                                            Schedule Training
+                                        </a>`;
 
     return `
 <!DOCTYPE html>
@@ -29,7 +69,7 @@ const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, o
                             </div>
                         </td>
                     </tr>
-                    
+
                     <!-- Main Card -->
                     <tr>
                         <td style="background-color: #ffffff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
@@ -40,34 +80,13 @@ const generateReminderEmailHtml = ({ studentName, classTypeName, scheduleLink, o
                                         <h1 style="margin: 0 0 8px 0; font-size: 24px; font-weight: 600; color: #18181b;">
                                             Hello, ${displayName}!
                                         </h1>
-                                        <p style="margin: 0 0 24px 0; font-size: 15px; color: #71717a; line-height: 1.5;">
-                                            This is a friendly reminder about your upcoming training.
-                                        </p>
-                                        
-                                        <!-- Training Info Box -->
-                                        <div style="background-color: #f4f4f5; border-radius: 8px; padding: 16px; margin-bottom: 24px;">
-                                            <p style="margin: 0 0 4px 0; font-size: 12px; color: #71717a; text-transform: uppercase; letter-spacing: 0.5px;">
-                                                Training Type
-                                            </p>
-                                            <p style="margin: 0; font-size: 16px; font-weight: 600; color: #18181b;">
-                                                ${classTypeName}
-                                            </p>
-                                        </div>
-                                        
-                                        <p style="margin: 0 0 24px 0; font-size: 15px; color: #52525b; line-height: 1.6;">
-                                            Your certification is approaching its renewal period. Please schedule your next session at your earliest convenience.
-                                        </p>
-                                        
-                                        <!-- CTA Button -->
-                                        <a href="${scheduleLink}" style="display: inline-block; background-color: #3b82f6; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500; padding: 12px 24px; border-radius: 8px;">
-                                            Schedule Training
-                                        </a>
+                                        ${bodyContent}
                                     </td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
-                    
+
                     <!-- Unsubscribe Section -->
                     <tr>
                         <td style="padding: 24px 0;">

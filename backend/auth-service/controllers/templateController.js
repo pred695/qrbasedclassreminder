@@ -86,7 +86,7 @@ const upsertTemplate = async (req, res) => {
             subject: channel.toUpperCase() === "EMAIL" ? subject.trim() : null,
             body: body.trim(),
             scheduleLink: scheduleLink || null,
-            variables: variables || [],
+            variables: variables || null,
         };
 
         const template = await templateRepository.upsertTemplate(templateData);

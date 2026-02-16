@@ -394,6 +394,27 @@ const findByDestinationWithOtp = async (destination) => {
     }
 };
 
+/**
+ * Delete a student by ID (cascades to signups and delivery logs)
+ * @param {string} studentId - Student UUID
+ * @returns {Promise<Object>} Deleted student info
+ */
+const deleteStudent = async (studentId) => {
+    try {
+        const validId = uuidSchema.parse(studentId);
+        const db = await getDB();
+        const student = await db.student.delete({
+            where: { id: validId },
+            select: { id: true, email: true, phone: true },
+        });
+        logger.info("Student deleted", { studentId: validId });
+        return student;
+    } catch (error) {
+        logger.error("Failed to delete student", { error: error.message, studentId });
+        throw transformError(error, "deleteStudent");
+    }
+};
+
 module.exports = {
     createStudent,
     findByEmail,
@@ -406,5 +427,6 @@ module.exports = {
     clearOptOutOtp,
     findByDestinationWithOtp,
     findStudents,
+    deleteStudent,
     STUDENT_FIELDS,
 };

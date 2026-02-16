@@ -31,6 +31,7 @@ const StudentSignup = () => {
     otpError,
     isVerifyingOtp,
     isResendingOtp,
+    verifiedChannels,
     // Actions
     setSelectedClassType,
     updateFormData,
@@ -169,6 +170,7 @@ const StudentSignup = () => {
                 isVerifying={isVerifyingOtp || isSubmitting}
                 isResending={isResendingOtp}
                 error={otpError}
+                verifiedChannels={verifiedChannels}
               />
             </CardContent>
           </Card>

@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/shared/Card';
 import Button from '@components/shared/Button';
 import { CLASS_TYPE_LABELS } from '@utils/constants';
+import { ClipboardList } from 'lucide-react';
 
 const ClassRegistration = () => {
     const navigate = useNavigate();
@@ -44,6 +45,19 @@ const ClassRegistration = () => {
                             </CardContent>
                         </Card>
                     ))}
+                </div>
+
+                {/* Manage Registrations */}
+                <div className="text-center">
+                    <Button
+                        variant="outline"
+                        size="lg"
+                        onClick={() => navigate('/my-registrations')}
+                        className="gap-2"
+                    >
+                        <ClipboardList className="h-5 w-5" />
+                        View / Manage My Registrations
+                    </Button>
                 </div>
 
                 {/* Footer */}

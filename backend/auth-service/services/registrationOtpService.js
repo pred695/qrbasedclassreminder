@@ -7,6 +7,7 @@ const emailService = require("./emailService");
 const smsService = require("./smsService");
 const { generateOtp } = require("./unsubscribeService");
 const { calculateReminderDate } = require("./studentService");
+const { CLASS_TYPE_LABELS } = require("./reminderService");
 const {
     initiateRegistrationSchema,
     verifyOtpSchema,
@@ -17,6 +18,10 @@ const {
     generateRegistrationOtpEmailHtml,
     generateRegistrationOtpEmailText,
 } = require("../templates/registrationOtpTemplates");
+const {
+    generateRegistrationConfirmationHtml,
+    generateRegistrationConfirmationText,
+} = require("../templates/registrationConfirmationTemplates");
 const {
     ValidationError,
     ConflictError,
@@ -125,6 +130,9 @@ const initiateRegistration = async (data) => {
         const now = Date.now();
         const expiresAt = new Date(now + OTP_EXPIRY_MS);
 
+        // Determine if both channels need verification
+        const bothRequired = !!(email && phone);
+
         // Store pending registration
         pendingRegistrations.set(registrationToken, {
             email: email || null,
@@ -136,6 +144,8 @@ const initiateRegistration = async (data) => {
             attempts: 0,
             resendCount: 0,
             lastResendAt: null,
+            bothRequired,
+            verifiedChannels: [],
         });
 
         // Send OTP
@@ -222,7 +232,51 @@ const verifyRegistrationOtp = async (data) => {
             );
         }
 
-        // OTP verified - generate verification token (JWT)
+        // Track verified channel
+        registration.verifiedChannels = registration.verifiedChannels || [];
+        registration.verifiedChannels.push(registration.verificationChannel);
+
+        logger.info("Registration OTP verified for channel", {
+            token: registrationToken.substring(0, 8),
+            channel: registration.verificationChannel,
+        });
+
+        // Check if both channels need verification and second still pending
+        if (registration.bothRequired && registration.verifiedChannels.length < 2) {
+            const nextChannel = registration.verificationChannel === "email" ? "phone" : "email";
+            const nextDestination = nextChannel === "email" ? registration.email : registration.phone;
+
+            // Generate new OTP for next channel
+            const newOtp = generateOtp();
+            const sendResult = await sendOtp(nextDestination, nextChannel, newOtp);
+
+            if (!sendResult.success) {
+                throw ValidationError(
+                    "Failed to send verification code to second channel. Please try again.",
+                    "SEND_FAILED"
+                );
+            }
+
+            // Update registration for next channel
+            registration.otp = newOtp;
+            registration.verificationChannel = nextChannel;
+            registration.attempts = 0;
+            registration.resendCount = 0;
+            registration.lastResendAt = null;
+            pendingRegistrations.set(registrationToken, registration);
+
+            const expiresAt = new Date(registration.createdAt + OTP_EXPIRY_MS);
+
+            return {
+                verified: false,
+                channelVerified: registration.verifiedChannels[0],
+                nextChannel,
+                maskedDestination: maskDestination(nextDestination, nextChannel),
+                expiresAt: expiresAt.toISOString(),
+            };
+        }
+
+        // All channels verified - generate verification token (JWT)
         const verificationToken = jwt.sign(
             {
                 registrationToken,
@@ -235,7 +289,7 @@ const verifyRegistrationOtp = async (data) => {
             { expiresIn: VERIFICATION_TOKEN_EXPIRY }
         );
 
-        logger.info("Registration OTP verified", {
+        logger.info("All channels verified, registration OTP complete", {
             token: registrationToken.substring(0, 8),
         });
 
@@ -326,6 +380,39 @@ const completeRegistration = async (data) => {
             studentId: student.id,
             classType,
         });
+
+        // Send confirmation email with booking link
+        const bookingLink = process.env.BOOKING_LINK || "https://www-1576u.bookeo.com/bookeo/b_lpginc_start.html?ctlsrc2=vskZyJm5J1HEVBjiZ6I3S3gwac%2B3JN3dWUpvA1XVhvI%3D&src=03a&source=remarketing";
+        const classTypeName = CLASS_TYPE_LABELS[classType] || classType;
+
+        if (email) {
+            try {
+                const html = generateRegistrationConfirmationHtml({ classTypeName, bookingLink });
+                const text = generateRegistrationConfirmationText({ classTypeName, bookingLink });
+                await emailService.sendEmail({
+                    to: email,
+                    subject: `Registration Confirmed - ${classTypeName}`,
+                    body: text,
+                    html,
+                });
+                logger.info("Confirmation email sent", { email, classType });
+            } catch (emailError) {
+                // Don't fail registration if confirmation email fails
+                logger.error("Failed to send confirmation email", { error: emailError.message });
+            }
+        }
+
+        if (phone) {
+            try {
+                await smsService.sendSms({
+                    to: phone,
+                    body: `Registration confirmed for ${classTypeName}! Book your training session: ${bookingLink}`,
+                });
+                logger.info("Confirmation SMS sent", { classType });
+            } catch (smsError) {
+                logger.error("Failed to send confirmation SMS", { error: smsError.message });
+            }
+        }
 
         return {
             signup,

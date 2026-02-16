@@ -113,13 +113,14 @@ const sendReminder = async (signupId) => {
             if (emailTemplate) {
                 subject = interpolateTemplate(emailTemplate.subject || "", templateVariables);
                 body = interpolateTemplate(emailTemplate.body, templateVariables);
-                // Generate HTML version from template
+                // Generate HTML version using the interpolated template body
                 html = generateReminderEmailHtml({
                     studentName,
                     classTypeName,
                     scheduleLink: appUrl,
                     optOutLink: templateVariables.optOutLink,
                     otpCode,
+                    templateBody: body,
                 });
             } else {
                 const defaultMsg = buildDefaultMessage(classTypeName, "EMAIL");
