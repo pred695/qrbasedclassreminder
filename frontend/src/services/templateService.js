@@ -7,7 +7,7 @@ import apiClient from './api';
  */
 export const getAllTemplates = async () => {
     const response = await apiClient.get('/api/admin/templates');
-    return response.data?.data?.templates || [];
+    return response?.data?.templates || [];
 };
 
 /**
@@ -18,7 +18,7 @@ export const getAllTemplates = async () => {
  */
 export const getTemplate = async (classType, channel) => {
     const response = await apiClient.get(`/api/admin/templates/${classType}/${channel}`);
-    return response.data.data.template;
+    return response?.data?.template || null;
 };
 
 /**
@@ -30,7 +30,7 @@ export const getTemplate = async (classType, channel) => {
  */
 export const saveTemplate = async (classType, channel, data) => {
     const response = await apiClient.put(`/api/admin/templates/${classType}/${channel}`, data);
-    return response.data.data.template;
+    return response?.data?.template || null;
 };
 
 /**
@@ -40,7 +40,7 @@ export const saveTemplate = async (classType, channel, data) => {
  */
 export const deleteTemplate = async (templateId) => {
     const response = await apiClient.delete(`/api/admin/templates/${templateId}`);
-    return response.data;
+    return response?.data;
 };
 
 export default {
