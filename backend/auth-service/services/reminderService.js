@@ -42,18 +42,18 @@ const interpolateTemplate = (template, variables) => {
  * @param {string} channel - EMAIL or SMS
  * @returns {Object} { subject?, body }
  */
-const buildDefaultMessage = (classTypeName, channel) => {
-    const appUrl = process.env.APP_BASE_URL || "https://yourapp.com";
+const buildDefaultMessage = (classTypeName, channel, scheduleLink) => {
+    const link = scheduleLink || process.env.APP_BASE_URL || "https://yourapp.com";
 
     if (channel === "EMAIL") {
         return {
             subject: `Reminder: ${classTypeName} Training Renewal`,
-            body: `Hello,\n\nThis is a reminder that your ${classTypeName} training certification is approaching its renewal period.\n\nPlease schedule your next session at your earliest convenience.\n\nVisit: ${appUrl}\n\nIf you no longer wish to receive these reminders, you can update your preferences on our website.\n\nThank you,\nStudent Training Portal`,
+            body: `Hello,\n\nThis is a reminder that your ${classTypeName} training certification is approaching its renewal period.\n\nPlease schedule your next session at your earliest convenience.\n\nVisit: ${link}\n\nIf you no longer wish to receive these reminders, you can update your preferences on our website.\n\nThank you,\nStudent Training Portal`,
         };
     }
 
     return {
-        body: `Reminder: Your ${classTypeName} certification is due for renewal. Visit ${appUrl} to schedule.`,
+        body: `Reminder: Your ${classTypeName} certification is due for renewal. Visit ${link} to schedule.`,
     };
 };
 
@@ -82,13 +82,13 @@ const sendReminder = async (signupId) => {
         logger.debug("Generated unsubscribe OTP for student", { studentId: student.id });
 
         // Build unsubscribe link with pre-filled destination
-        const unsubscribeDestination = student.email || student.phone;
         const unsubscribeLink = `${appUrl}/unsubscribe?${student.email ? 'email=' + encodeURIComponent(student.email) : 'phone=' + encodeURIComponent(student.phone)}`;
 
-        const templateVariables = {
+        const bookingLink = process.env.BOOKING_LINK || appUrl;
+
+        const baseTemplateVariables = {
             classTypeName,
             studentName: studentName || '',
-            scheduleLink: appUrl,
             optOutLink: unsubscribeLink,
             unsubscribeLink,
             otpCode,
@@ -108,33 +108,36 @@ const sendReminder = async (signupId) => {
         if (shouldSendEmail) {
             const emailTemplate = await templateRepository.findByClassTypeAndChannel(signup.classType, "EMAIL");
 
+            // Use template's scheduleLink if available, otherwise fall back to BOOKING_LINK or appUrl
+            const emailScheduleLink = emailTemplate?.scheduleLink || bookingLink;
+            const templateVariables = { ...baseTemplateVariables, scheduleLink: emailScheduleLink };
+
             let subject, body, html;
             if (emailTemplate) {
                 subject = interpolateTemplate(emailTemplate.subject || "", templateVariables);
                 body = interpolateTemplate(emailTemplate.body, templateVariables);
-                // Generate HTML version using the interpolated template body
                 html = generateReminderEmailHtml({
                     studentName,
                     classTypeName,
-                    scheduleLink: appUrl,
+                    scheduleLink: emailScheduleLink,
                     optOutLink: templateVariables.optOutLink,
                     otpCode,
                     templateBody: body,
                 });
             } else {
-                const defaultMsg = buildDefaultMessage(classTypeName, "EMAIL");
+                const defaultMsg = buildDefaultMessage(classTypeName, "EMAIL", emailScheduleLink);
                 subject = defaultMsg.subject;
                 body = generateReminderEmailText({
                     studentName,
                     classTypeName,
-                    scheduleLink: appUrl,
+                    scheduleLink: emailScheduleLink,
                     optOutLink: templateVariables.optOutLink,
                     otpCode,
                 });
                 html = generateReminderEmailHtml({
                     studentName,
                     classTypeName,
-                    scheduleLink: appUrl,
+                    scheduleLink: emailScheduleLink,
                     optOutLink: templateVariables.optOutLink,
                     otpCode,
                 });
@@ -162,11 +165,15 @@ const sendReminder = async (signupId) => {
         if (shouldSendSms) {
             const smsTemplate = await templateRepository.findByClassTypeAndChannel(signup.classType, "SMS");
 
+            // Use template's scheduleLink if available, otherwise fall back to BOOKING_LINK or appUrl
+            const smsScheduleLink = smsTemplate?.scheduleLink || bookingLink;
+            const templateVariables = { ...baseTemplateVariables, scheduleLink: smsScheduleLink };
+
             let body;
             if (smsTemplate) {
                 body = interpolateTemplate(smsTemplate.body, templateVariables);
             } else {
-                const defaultMsg = buildDefaultMessage(classTypeName, "SMS");
+                const defaultMsg = buildDefaultMessage(classTypeName, "SMS", smsScheduleLink);
                 body = defaultMsg.body;
             }
 
