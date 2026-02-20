@@ -45,7 +45,7 @@ const Modal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-sm"
@@ -58,6 +58,7 @@ const Modal = ({
         className={clsx(
           'relative z-50 w-full rounded-lg border bg-background p-6 shadow-lg',
           'animate-in fade-in-0 zoom-in-95',
+          'max-h-[90vh] overflow-y-auto',
           sizeClasses[size]
         )}
         role="dialog"
@@ -100,7 +101,7 @@ const Modal = ({
 };
 
 export const ModalFooter = ({ className, ...props }) => (
-  <div className={clsx('mt-6 flex justify-end gap-2', className)} {...props} />
+  <div className={clsx('mt-6 flex flex-wrap justify-end gap-2', className)} {...props} />
 );
 
 export default Modal;
