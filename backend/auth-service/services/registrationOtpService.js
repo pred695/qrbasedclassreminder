@@ -154,8 +154,12 @@ const initiateRegistration = async (data) => {
 
         if (!sendResult.success) {
             pendingRegistrations.delete(registrationToken);
+            logger.error("OTP send failed", {
+                channel: verificationChannel,
+                error: sendResult.error,
+            });
             throw ValidationError(
-                "Failed to send verification code. Please try again.",
+                `Failed to send verification code: ${sendResult.error || "Unknown error"}. Please try again.`,
                 "SEND_FAILED"
             );
         }
