@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/shared/Card';
 import Button from '@components/shared/Button';
+import Input from '@components/shared/Input';
+import PhoneInput from '@components/shared/PhoneInput';
 import Alert, { AlertDescription } from '@components/shared/Alert';
 import Modal, { ModalFooter } from '@components/shared/Modal';
 import Badge from '@components/shared/Badge';
@@ -27,6 +29,7 @@ const STEPS = {
 
 const MyRegistrations = () => {
   const [step, setStep] = useState(STEPS.CONTACT);
+  const [contactMethod, setContactMethod] = useState('email'); // 'email' | 'phone'
   const [destination, setDestination] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [verificationToken, setVerificationToken] = useState(null);
@@ -231,22 +234,55 @@ const MyRegistrations = () => {
 
   const renderContactStep = () => (
     <form onSubmit={handleDestinationSubmit} className="space-y-6">
-      <div>
-        <label htmlFor="destination" className="block text-sm font-medium text-foreground mb-2">
-          Email or Phone Number
+      {/* Contact Method Toggle */}
+      <div className="space-y-3">
+        <label className="block text-sm font-medium text-foreground">
+          Look up by
         </label>
-        <input
-          id="destination"
-          type="text"
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={contactMethod === 'email' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setContactMethod('email'); setDestination(''); }}
+            className="flex-1"
+          >
+            <Mail className="h-4 w-4 mr-1" /> Email
+          </Button>
+          <Button
+            type="button"
+            variant={contactMethod === 'phone' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setContactMethod('phone'); setDestination(''); }}
+            className="flex-1"
+          >
+            <Phone className="h-4 w-4 mr-1" /> Phone
+          </Button>
+        </div>
+      </div>
+
+      {contactMethod === 'email' ? (
+        <Input
+          type="email"
+          name="destination"
+          label="Email Address"
+          placeholder="your.email@example.com"
           value={destination}
           onChange={(e) => setDestination(e.target.value)}
-          placeholder="Enter your email or phone"
-          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          autoComplete="email"
+          inputMode="email"
         />
-        <p className="mt-2 text-xs text-muted-foreground">
-          Enter the email or phone number you used when signing up for training reminders.
-        </p>
-      </div>
+      ) : (
+        <PhoneInput
+          label="Phone Number"
+          value={destination}
+          onChange={(e) => setDestination(e.target.value)}
+        />
+      )}
+
+      <p className="text-xs text-muted-foreground">
+        Enter the {contactMethod} you used when signing up for training reminders.
+      </p>
 
       <Button type="submit" className="w-full" size="lg" loading={loading}>
         Look Up My Registrations
@@ -449,6 +485,7 @@ const MyRegistrations = () => {
         <Button
           onClick={() => {
             setStep(STEPS.CONTACT);
+            setContactMethod('email');
             setDestination('');
             setOtp(['', '', '', '', '', '']);
             setVerificationToken(null);
