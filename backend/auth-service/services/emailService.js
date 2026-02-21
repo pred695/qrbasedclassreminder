@@ -72,12 +72,15 @@ const sendEmail = async ({ to, subject, body, html }) => {
     } catch (error) {
         // Extract detailed error from SendGrid response
         const errorMessage = error.response?.body?.errors?.[0]?.message || error.message;
+        const statusCode = error.response?.statusCode || error.code;
 
         logger.error("Failed to send email", {
             to,
             subject,
             error: errorMessage,
-            statusCode: error.code,
+            statusCode,
+            apiKeyPrefix: process.env.SENDGRID_API_KEY ? process.env.SENDGRID_API_KEY.substring(0, 10) + "..." : "NOT SET",
+            fromEmail: process.env.SENDGRID_FROM_EMAIL || "NOT SET",
         });
 
         return { success: false, error: errorMessage };
