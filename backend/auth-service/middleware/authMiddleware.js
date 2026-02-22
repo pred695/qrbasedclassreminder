@@ -173,9 +173,7 @@ const requireRole = (minimumRole) => {
 };
 
 // Convenience role middleware
-const requireSuperAdmin = requireRole("SUPER_ADMIN");
 const requireAdmin = requireRole("ADMIN");
-const requireViewer = requireRole("VIEWER");
 
 /**
  * Middleware to validate refresh token
@@ -254,7 +252,6 @@ const combineMiddleware = (...middlewares) => {
 // Pre-configured middleware combinations
 const requireAuth = combineMiddleware(authenticateAdmin);
 const requireAuthAdmin = combineMiddleware(authenticateAdmin, requireAdmin);
-const requireAuthSuperAdmin = combineMiddleware(authenticateAdmin, requireSuperAdmin);
 
 module.exports = {
   // Core authentication
@@ -263,9 +260,7 @@ module.exports = {
 
   // Role-based access control
   requireRole,
-  requireSuperAdmin,
   requireAdmin,
-  requireViewer,
 
   // Utility functions
   extractToken,
@@ -279,5 +274,4 @@ module.exports = {
   // Pre-configured middleware
   requireAuth,
   requireAuthAdmin,
-  requireAuthSuperAdmin,
 };

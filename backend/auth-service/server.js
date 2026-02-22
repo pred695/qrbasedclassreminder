@@ -232,7 +232,7 @@ app.get("/", (req, res) => {
           "GET /api/signups/stats (Admin)",
           "GET /api/signups/:signupId (Admin)",
           "PATCH /api/signups/:signupId (Admin)",
-          "DELETE /api/signups/:signupId (SUPER_ADMIN)",
+          "DELETE /api/signups/:signupId (Admin)",
         ],
         auth: [
           "POST /api/admin/login",
@@ -247,12 +247,12 @@ app.get("/", (req, res) => {
         ],
         sessions: ["GET /api/admin/sessions", "DELETE /api/admin/sessions/:id"],
         management: [
-          "GET /api/admin/manage (SUPER_ADMIN)",
-          "POST /api/admin/manage (SUPER_ADMIN)",
-          "GET /api/admin/manage/:id (SUPER_ADMIN)",
-          "PUT /api/admin/manage/:id (SUPER_ADMIN)",
-          "PUT /api/admin/manage/:id/role (SUPER_ADMIN)",
-          "DELETE /api/admin/manage/:id (SUPER_ADMIN)",
+          "GET /api/admin/manage (Admin)",
+          "POST /api/admin/manage (Admin)",
+          "GET /api/admin/manage/:id (Admin)",
+          "PUT /api/admin/manage/:id (Admin)",
+          "PUT /api/admin/manage/:id/role (Admin)",
+          "DELETE /api/admin/manage/:id (Admin)",
         ],
       },
     },
@@ -353,10 +353,10 @@ const initializeDefaultAdmin = async () => {
       email,
       password: hashedPassword,
       name,
-      role: "SUPER_ADMIN",
+      role: "ADMIN",
     });
 
-    logger.info("Default SUPER_ADMIN created successfully", { email, name });
+    logger.info("Default admin created successfully", { email, name });
   } catch (error) {
     logger.error("Failed to create default admin", {
       error: error.message,

@@ -80,9 +80,8 @@ const ALLOWED_SESSION_UPDATE_FIELDS = [
 
 // Role hierarchy for RBAC
 const ROLE_HIERARCHY = {
-  SUPER_ADMIN: 3,
   ADMIN: 2,
-  VIEWER: 1,
+  STAFF: 1,
 };
 
 // JWT token types

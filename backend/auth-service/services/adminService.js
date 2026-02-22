@@ -357,11 +357,11 @@ const revokeSession = async (adminId, sessionId) => {
 };
 
 // ============================================
-// Admin Management Functions (SUPER_ADMIN only)
+// Admin Management Functions (ADMIN only)
 // ============================================
 
 /**
- * Create a new admin (SUPER_ADMIN only)
+ * Create a new admin (ADMIN only)
  * @param {Object} adminData - New admin data
  * @returns {Promise<Object>} Created admin
  */
@@ -396,7 +396,7 @@ const createAdmin = async (adminData) => {
 };
 
 /**
- * Get all admins with pagination (SUPER_ADMIN only)
+ * Get all admins with pagination (ADMIN only)
  * @param {Object} filters - Filter options
  * @param {Object} options - Pagination options
  * @returns {Promise<Object>} Paginated admin list
@@ -412,7 +412,7 @@ const getAllAdmins = async (filters = {}, options = {}) => {
 };
 
 /**
- * Get admin by ID (SUPER_ADMIN only)
+ * Get admin by ID (ADMIN only)
  * @param {string} adminId - Admin ID
  * @returns {Promise<Object>} Admin data
  */
@@ -430,7 +430,7 @@ const getAdminById = async (adminId) => {
 };
 
 /**
- * Update admin (SUPER_ADMIN only)
+ * Update admin (ADMIN only)
  * @param {string} adminId - Admin ID
  * @param {Object} updateData - Update data
  * @returns {Promise<Object>} Updated admin
@@ -460,7 +460,7 @@ const updateAdminById = async (adminId, updateData) => {
 };
 
 /**
- * Change admin role (SUPER_ADMIN only)
+ * Change admin role (ADMIN only)
  * @param {string} adminId - Admin ID
  * @param {string} newRole - New role
  * @returns {Promise<Object>} Updated admin
@@ -480,7 +480,7 @@ const changeAdminRole = async (adminId, newRole) => {
 };
 
 /**
- * Deactivate admin (SUPER_ADMIN only)
+ * Deactivate admin (ADMIN only)
  * @param {string} adminId - Admin ID
  * @returns {Promise<Object>} Result
  */
@@ -525,7 +525,7 @@ module.exports = {
   getAdminSessions,
   revokeSession,
 
-  // Admin management (SUPER_ADMIN)
+  // Admin management (ADMIN)
   createAdmin,
   getAllAdmins,
   getAdminById,
