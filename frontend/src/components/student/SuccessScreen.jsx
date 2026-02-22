@@ -1,10 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import Button from '@components/shared/Button';
 import { Card, CardContent } from '@components/shared/Card';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Home } from 'lucide-react';
 import { CLASS_TYPE_LABELS } from '@utils/constants';
 import { formatDate } from '@utils/formatters';
 
 const SuccessScreen = ({ signupData, onReset }) => {
+  const navigate = useNavigate();
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -54,9 +56,15 @@ const SuccessScreen = ({ signupData, onReset }) => {
         </ul>
       </div>
 
-      <Button onClick={onReset} variant="outline" className="w-full" size="lg">
-        Register for Another Training
-      </Button>
+      <div className="flex flex-col gap-3">
+        <Button onClick={() => navigate('/')} className="w-full gap-2" size="lg">
+          <Home className="h-4 w-4" />
+          Back to Home
+        </Button>
+        <Button onClick={onReset} variant="outline" className="w-full" size="lg">
+          Register for Another Training
+        </Button>
+      </div>
     </div>
   );
 };

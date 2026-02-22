@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@components/shared/Card';
 import Button from '@components/shared/Button';
 import { CLASS_TYPE_LABELS } from '@utils/constants';
-import { ClipboardList } from 'lucide-react';
+import { ClipboardList, LogIn } from 'lucide-react';
 
 const ClassRegistration = () => {
     const navigate = useNavigate();
@@ -16,13 +16,24 @@ const ClassRegistration = () => {
         <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
             <div className="mx-auto max-w-5xl space-y-6">
                 {/* Header */}
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                        Training Registration
-                    </h1>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                        Select a training class to register
-                    </p>
+                <div className="flex items-start justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                            Training Registration
+                        </h1>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                            Select a training class to register
+                        </p>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => navigate('/login')}
+                        className="gap-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                        <LogIn className="h-4 w-4" />
+                        Admin
+                    </Button>
                 </div>
 
                 {/* Class Grid */}
