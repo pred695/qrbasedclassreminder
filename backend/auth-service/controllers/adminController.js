@@ -180,7 +180,7 @@ const revokeSession = async (req, res) => {
 };
 
 // ============================================
-// Admin Management Handlers (SUPER_ADMIN only)
+// Admin Management Handlers (ADMIN only)
 // ============================================
 
 /**
@@ -208,7 +208,7 @@ const createAdmin = async (req, res) => {
   try {
     const result = await adminService.createAdmin(req.body);
 
-    logger.info("New admin created by super admin", {
+    logger.info("New user created by admin", {
       createdBy: req.admin.id,
       newAdminId: result.admin.id,
     });
@@ -243,7 +243,7 @@ const updateAdmin = async (req, res) => {
     const { adminId } = req.params;
     const result = await adminService.updateAdminById(adminId, req.body);
 
-    logger.info("Admin updated by super admin", { updatedBy: req.admin.id, adminId });
+    logger.info("User updated by admin", { updatedBy: req.admin.id, adminId });
     return createSuccessResponse(res, result, result.message, 200);
   } catch (error) {
     logger.error("Update admin failed", { error: error.message, adminId: req.params?.adminId });
@@ -340,7 +340,7 @@ module.exports = {
   getSessions,
   revokeSession,
 
-  // Admin Management (SUPER_ADMIN)
+  // Admin Management (ADMIN only)
   getAllAdmins,
   createAdmin,
   getAdminById,

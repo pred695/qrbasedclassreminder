@@ -90,3 +90,59 @@ export const resetReminder = async (signupId) => {
 export const getDeliveryDetails = async (signupId) => {
   return await apiClient.get(`/api/admin/reminders/${signupId}/delivery`);
 };
+
+// ============================================
+// User Management (Admin only)
+// ============================================
+
+/**
+ * Get all users (admins and staff)
+ * @param {Object} params - Query parameters (pagination, filters)
+ * @returns {Promise<Object>} Paginated list of users
+ */
+export const getAllUsers = async (params = {}) => {
+  const response = await apiClient.get('/api/admin/manage', { params });
+  return response?.data || response;
+};
+
+/**
+ * Create a new user (admin or staff)
+ * @param {Object} data - { name, email, password, role }
+ * @returns {Promise<Object>} Created user
+ */
+export const createUser = async (data) => {
+  const response = await apiClient.post('/api/admin/manage', data);
+  return response?.data || response;
+};
+
+/**
+ * Update a user
+ * @param {string} userId - User ID
+ * @param {Object} data - Update data
+ * @returns {Promise<Object>} Updated user
+ */
+export const updateUser = async (userId, data) => {
+  const response = await apiClient.put(`/api/admin/manage/${userId}`, data);
+  return response?.data || response;
+};
+
+/**
+ * Change a user's role
+ * @param {string} userId - User ID
+ * @param {string} role - New role (ADMIN or STAFF)
+ * @returns {Promise<Object>} Updated user
+ */
+export const changeUserRole = async (userId, role) => {
+  const response = await apiClient.put(`/api/admin/manage/${userId}/role`, { role });
+  return response?.data || response;
+};
+
+/**
+ * Deactivate a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} Result
+ */
+export const deactivateUser = async (userId) => {
+  const response = await apiClient.delete(`/api/admin/manage/${userId}`);
+  return response?.data || response;
+};

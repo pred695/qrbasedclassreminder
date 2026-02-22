@@ -13,7 +13,7 @@ import ReminderDetailModal from '@components/admin/ReminderDetailModal';
 import AddStudentModal from '@components/admin/AddStudentModal';
 import Spinner from '@components/shared/Spinner';
 import Alert, { AlertDescription } from '@components/shared/Alert';
-import { Download, RefreshCw, Users, Clock, LogOut, UserPlus, FileText } from 'lucide-react';
+import { Download, RefreshCw, Users, Clock, LogOut, UserPlus, FileText, ShieldCheck } from 'lucide-react';
 import { exportSignupsToCSV, generateExportFilename } from '@utils/csvExport';
 import toast from 'react-hot-toast';
 
@@ -123,10 +123,18 @@ const AdminDashboard = () => {
               <UserPlus className="mr-2 h-4 w-4" />
               Add Student
             </Button>
-            <Button variant="outline" onClick={() => navigate('/admin/templates')}>
-              <FileText className="mr-2 h-4 w-4" />
-              Templates
-            </Button>
+            {admin?.role === 'ADMIN' && (
+              <Button variant="outline" onClick={() => navigate('/admin/users')}>
+                <ShieldCheck className="mr-2 h-4 w-4" />
+                Users
+              </Button>
+            )}
+            {admin?.role === 'ADMIN' && (
+              <Button variant="outline" onClick={() => navigate('/admin/templates')}>
+                <FileText className="mr-2 h-4 w-4" />
+                Templates
+              </Button>
+            )}
             <Button variant="outline" onClick={handleRefresh} disabled={isLoading}>
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh

@@ -209,7 +209,7 @@ const updateAdmin = async (adminId, updateData) => {
 };
 
 /**
- * Update admin role (SUPER_ADMIN only)
+ * Update admin role (ADMIN only)
  * @param {string} adminId - Admin ID
  * @param {string} newRole - New role
  * @returns {Promise<Object>} Updated admin object
@@ -371,17 +371,15 @@ const countByRole = async () => {
   try {
     const db = await getDB();
 
-    const [superAdmins, admins, viewers, total] = await Promise.all([
-      db.admin.count({ where: { role: "SUPER_ADMIN", isActive: true } }),
+    const [admins, staff, total] = await Promise.all([
       db.admin.count({ where: { role: "ADMIN", isActive: true } }),
-      db.admin.count({ where: { role: "VIEWER", isActive: true } }),
+      db.admin.count({ where: { role: "STAFF", isActive: true } }),
       db.admin.count({ where: { isActive: true } }),
     ]);
 
     return {
-      SUPER_ADMIN: superAdmins,
       ADMIN: admins,
-      VIEWER: viewers,
+      STAFF: staff,
       total,
     };
   } catch (error) {

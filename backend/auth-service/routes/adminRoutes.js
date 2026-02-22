@@ -3,7 +3,7 @@ const router = express.Router();
 const adminController = require("../controllers/adminController");
 const {
   authenticateAdmin,
-  requireSuperAdmin,
+  requireAdmin,
   validateRefreshToken,
 } = require("../middleware/authMiddleware");
 
@@ -39,29 +39,29 @@ router.get("/sessions", authenticateAdmin, adminController.getSessions);
 router.delete("/sessions/:sessionId", authenticateAdmin, adminController.revokeSession);
 
 // ============================================
-// Admin Management Routes (SUPER_ADMIN Only)
+// Admin Management Routes (ADMIN Only)
 // ============================================
 
 // Get admin statistics (before :adminId to avoid conflict)
-router.get("/manage/stats", authenticateAdmin, requireSuperAdmin, adminController.getStats);
+router.get("/manage/stats", authenticateAdmin, requireAdmin, adminController.getStats);
 
 // List all admins
-router.get("/manage", authenticateAdmin, requireSuperAdmin, adminController.getAllAdmins);
+router.get("/manage", authenticateAdmin, requireAdmin, adminController.getAllAdmins);
 
 // Create new admin
-router.post("/manage", authenticateAdmin, requireSuperAdmin, adminController.createAdmin);
+router.post("/manage", authenticateAdmin, requireAdmin, adminController.createAdmin);
 
 // Get admin by ID
-router.get("/manage/:adminId", authenticateAdmin, requireSuperAdmin, adminController.getAdminById);
+router.get("/manage/:adminId", authenticateAdmin, requireAdmin, adminController.getAdminById);
 
 // Update admin
-router.put("/manage/:adminId", authenticateAdmin, requireSuperAdmin, adminController.updateAdmin);
+router.put("/manage/:adminId", authenticateAdmin, requireAdmin, adminController.updateAdmin);
 
 // Change admin role
 router.put(
   "/manage/:adminId/role",
   authenticateAdmin,
-  requireSuperAdmin,
+  requireAdmin,
   adminController.changeRole
 );
 
@@ -69,7 +69,7 @@ router.put(
 router.delete(
   "/manage/:adminId",
   authenticateAdmin,
-  requireSuperAdmin,
+  requireAdmin,
   adminController.deactivateAdmin
 );
 

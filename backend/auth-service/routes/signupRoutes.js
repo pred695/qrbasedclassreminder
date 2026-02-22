@@ -25,7 +25,7 @@ router.get("/:signupId", signupController.getSignupById); // authenticateAdmin r
 // Update signup
 router.patch("/:signupId", signupController.updateSignup); // authenticateAdmin removed temporarily
 
-// Delete signup (SUPER_ADMIN only for safety)
-router.delete("/:signupId", signupController.deleteSignup); // authenticateAdmin and requireSuperAdmin removed temporarily
+// Delete signup (Admin only for safety)
+router.delete("/:signupId", signupController.deleteSignup); // authenticateAdmin and requireAdmin removed temporarily
 
 module.exports = router;

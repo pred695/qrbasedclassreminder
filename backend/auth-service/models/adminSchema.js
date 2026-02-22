@@ -38,8 +38,8 @@ const uuidSchema = z
   .transform((val) => val.toLowerCase());
 
 // Admin role enum
-const adminRoleSchema = z.enum(["SUPER_ADMIN", "ADMIN", "VIEWER"], {
-  errorMap: () => ({ message: "Role must be SUPER_ADMIN, ADMIN, or VIEWER" }),
+const adminRoleSchema = z.enum(["ADMIN", "STAFF"], {
+  errorMap: () => ({ message: "Role must be ADMIN or STAFF" }),
 });
 
 // Date schema
@@ -75,13 +75,13 @@ const sanitizedStringSchema = z.string().transform((input) => {
 // Admin-specific schemas
 // ============================================
 
-// Admin creation schema (used by SUPER_ADMIN to create other admins)
+// Admin creation schema (used by ADMIN to create other admins/staff)
 const createAdminSchema = z
   .object({
     email: emailSchema,
     password: passwordSchema,
     name: nameSchema,
-    role: adminRoleSchema.optional().default("VIEWER"),
+    role: adminRoleSchema.optional().default("STAFF"),
   })
   .strict();
 
@@ -97,7 +97,7 @@ const updateAdminSchema = z
     message: "At least one field must be provided for update",
   });
 
-// Admin role update schema (SUPER_ADMIN only)
+// Admin role update schema (ADMIN only)
 const updateAdminRoleSchema = z
   .object({
     role: adminRoleSchema,

@@ -10,6 +10,7 @@ import UnsubscribeFlow from '@pages/UnsubscribeFlow';
 import MyRegistrations from '@pages/MyRegistrations';
 import ClassRegistration from '@pages/ClassRegistration';
 import QRGenerator from '@pages/QRGenerator';
+import UserManagement from '@pages/UserManagement';
 import NotFound from '@pages/NotFound';
 import ProtectedRoute from '@components/auth/ProtectedRoute';
 import useAuthStore from '@store/authStore';
@@ -80,6 +81,14 @@ function App() {
           element={
             <ProtectedRoute>
               <QRGenerator />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <ProtectedRoute>
+              <UserManagement />
             </ProtectedRoute>
           }
         />
